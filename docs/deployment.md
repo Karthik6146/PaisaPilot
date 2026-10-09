@@ -17,7 +17,7 @@ The function region is bom1 (Mumbai), matching the connected Supabase database. 
 | `DATABASE_URL` | Supabase Transaction pooler URI with the actual database password |
 | `INVITE_CODE` | Your chosen six digits, including any leading zeroes |
 | `SESSION_SECRET` | At least 32 random characters; preferably 32 random bytes encoded as hex |
-| `APP_ORIGIN` | Exact HTTPS origin, e.g. `https://your-project.vercel.app`, without a trailing slash |
+| `APP_ORIGIN` | HTTPS website origin, e.g. `https://your-project.vercel.app`. A root trailing slash and surrounding whitespace are normalized; paths, queries and fragments are rejected. |
 
 Generate the secret locally: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Store it only in environment settings. Never prefix these variables with `VITE_` or commit real `.env` files.
 

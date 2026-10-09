@@ -39,6 +39,16 @@ test('server configuration fails closed, origin and unicode comparison are safe'
   assert.throws(() => readConfig({ APP_ORIGIN: 'http://example.com', INVITE_CODE: '102030', SESSION_SECRET: 'x'.repeat(32), DATABASE_URL: 'dummy', NODE_ENV: 'production' }));
   assert.equal(equal('é'.repeat(64), 'a'.repeat(64)), false);
 });
+
+test('application origin accepts a pasted root URL while rejecting unsafe origins', () => {
+  const env = { APP_ORIGIN: ' https://paisa-pilot-umber.vercel.app/\n', INVITE_CODE: '102030', SESSION_SECRET: 'x'.repeat(32), DATABASE_URL: 'dummy', VERCEL: '1' };
+  assert.equal(readConfig(env).origin, 'https://paisa-pilot-umber.vercel.app');
+  for (const origin of ['https://example.com/path', 'https://example.com/?query=1', 'https://example.com/#fragment', 'https://user:password@example.com/', 'http://localhost:5173/', 'ftp://localhost/']) {
+    assert.throws(() => readConfig({ ...env, APP_ORIGIN: origin }));
+  }
+  assert.equal(readConfig({ ...env, VERCEL: '0', APP_ORIGIN: 'http://localhost:5173/' }).origin, 'http://localhost:5173');
+  assert.throws(() => readConfig({ ...env, VERCEL: '0', APP_ORIGIN: 'ftp://localhost/' }));
+});
 test('invite, password, session, method and origin gates protect the API', async t => {
   const { call, register, store } = await fixture(t);
   assert.equal((await call('session')).status, 401);

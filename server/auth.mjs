@@ -22,10 +22,10 @@ export async function checkPassword(password, stored) {
   return equal(key.toString('hex'), expected || '0'.repeat(128));
 }
 export function readConfig(env = process.env) {
-  const origin = env.APP_ORIGIN;
+  const origin = env.APP_ORIGIN?.trim();
   if (!origin || !/^\d{6}$/.test(env.INVITE_CODE || '') || (env.SESSION_SECRET || '').length < 32 || !env.DATABASE_URL) throw new Error('Missing server configuration');
   const parsed = new URL(origin);
   const production = env.NODE_ENV === 'production' || env.VERCEL === '1';
-  if (parsed.origin !== origin || (parsed.protocol !== 'https:' && (production || !['localhost', '127.0.0.1'].includes(parsed.hostname)))) throw new Error('Invalid application origin');
-  return { origin, production, database: env.DATABASE_URL, invite: env.INVITE_CODE, secret: env.SESSION_SECRET };
+  if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash || (parsed.protocol !== 'https:' && (production || parsed.protocol !== 'http:' || !['localhost', '127.0.0.1'].includes(parsed.hostname)))) throw new Error('Invalid application origin');
+  return { origin: parsed.origin, production, database: env.DATABASE_URL, invite: env.INVITE_CODE, secret: env.SESSION_SECRET };
 }
