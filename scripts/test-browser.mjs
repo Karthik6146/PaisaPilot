@@ -1,0 +1,84 @@
+import { chromium } from 'playwright';
+import axe from 'axe-core';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { readFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { createHandler } from '../server/handler.mjs';
+import { memoryStore } from './fixtures/profile-store.mjs';
+
+const store = memoryStore();
+const cfg = { origin: '', production: false, invite: '102030', secret: 'dummy-browser-test-secret-'.repeat(2), database: 'unused' };
+const api = createHandler({ store, config: () => cfg });
+const headers = JSON.parse(await readFile('vercel.json', 'utf8')).headers[0].headers;
+const root = path.resolve('dist');
+const server = createServer(async (req, res) => {
+  for (const h of headers) res.setHeader(h.key, h.value);
+  if (req.url.startsWith('/api/index')) return api(req, res);
+  try {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://test').pathname);
+    const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
+    if (!file.startsWith(root + path.sep)) throw new Error('Invalid path');
+    const content = await readFile(file);
+    res.setHeader('Content-Type', file.endsWith('.js') ? 'application/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.svg') ? 'image/svg+xml' : 'text/html'); res.end(content);
+  } catch { res.statusCode = 404; res.end('Not found'); }
+});
+await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+cfg.origin = 'http://127.0.0.1:' + server.address().port;
+let browser;
+try {
+  browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, timezoneId: 'Asia/Kolkata' });
+  await context.route('**/*', route => new URL(route.request().url()).origin === cfg.origin ? route.continue() : route.abort());
+  const page = await context.newPage(); const errors = [];
+  page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => dialog.accept());
+  const scan = async label => { await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().map(animation => animation.finished)); }); await page.evaluate(axe.source); const result = await page.evaluate(async () => window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } })); assert.deepEqual(result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, issue: n.failureSummary })) })), [], 'Accessibility: ' + label); };
+  const saved = () => page.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  const credentials = async username => { await page.getByLabel('Invite code').fill(cfg.invite); await page.getByLabel('Username', { exact: true }).fill(username); await page.getByLabel('Password', { exact: true }).fill('dummy-browser-password'); };
+  await mkdir('docs/screenshots', { recursive: true });
+  await page.goto(cfg.origin); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
+  await scan('login'); await page.screenshot({ path: 'docs/screenshots/invite-desktop.png', fullPage: true });
+  await page.getByRole('button', { name: 'Switch to dark mode' }).click(); await scan('dark login');
+  await page.setViewportSize({ width: 320, height: 850 }); await scan('mobile login');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.getByRole('button', { name: 'Switch to light mode' }).click(); await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await scan('registration');
+  await credentials('alice'); await page.getByLabel('Profile name').fill('Alice Example');
+  await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  assert.equal(await page.locator('.balance-value').textContent(), '₹0'); await scan('new profile');
+  await page.getByRole('button', { name: 'Set your monthly budget' }).click(); await page.getByLabel('Monthly pocket money').fill('5000');
+  await page.getByLabel('New category name').fill('Food'); await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await page.getByRole('button', { name: 'Save monthly budget' }).click(); await saved();
+  await page.getByRole('button', { name: 'Dashboard', exact: true }).click(); assert.equal(await page.locator('.balance-value').textContent(), '₹5,000');
+  await page.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await page.getByLabel('Amount').fill('100'); await page.getByLabel('Category', { exact: true }).fill('Food'); await page.getByRole('dialog').getByLabel('Note').fill('Dummy lunch');
+  await page.getByRole('button', { name: 'Save expense' }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹4,900');
+  await page.getByRole('button', { name: 'Switch to dark mode' }).click(); await saved(); await scan('dark dashboard');
+  await page.setViewportSize({ width: 380, height: 850 }); await scan('mobile dashboard'); await page.screenshot({ path: 'docs/screenshots/profile-mobile.png', fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  // A failed server save must preserve current edits and export them, rather than old persisted data.
+  let failSave = true;
+  await context.route('**/api/index?action=save', route => failSave ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Dummy save failure.' }) }) : route.continue());
+  await page.getByRole('button', { name: 'Add expense', exact: true }).click(); await page.getByLabel('Amount').fill('50'); await page.getByLabel('Category', { exact: true }).fill('Food'); await page.getByRole('dialog').getByLabel('Note').fill('Unsaved dummy snack'); await page.getByRole('button', { name: 'Save expense' }).click();
+  await page.getByRole('alert').filter({ hasText: 'Dummy save failure.' }).waitFor();
+  await page.getByRole('button', { name: 'Open profile settings' }).click(); await scan('profile settings');
+  const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export backup' }).click(); const download = await downloadPromise;
+  const backup = JSON.parse(await readFile(await download.path(), 'utf8')); assert.equal(backup.transactions.length, 2); assert.ok(backup.transactions.some(t => t.note === 'Unsaved dummy snack'));
+  await page.getByRole('button', { name: 'Close settings' }).click(); failSave = false; await page.getByRole('button', { name: 'Retry saving' }).click(); await saved();
+  const otherTab = await context.newPage(); await otherTab.goto(cfg.origin); await otherTab.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByLabel('New budget note').fill('First tab note'); await page.getByRole('button', { name: 'Add note', exact: true }).click(); await saved();
+  await otherTab.getByLabel('New budget note').fill('Stale tab note'); await otherTab.getByRole('button', { name: 'Add note', exact: true }).click(); await otherTab.getByRole('alert').filter({ hasText: 'changed in another tab' }).waitFor();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
+  await otherTab.getByRole('heading', { name: 'Welcome back.' }).waitFor(); assert.equal(await otherTab.locator('.balance-value').count(), 0); await otherTab.close();
+  await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await credentials('bob'); await page.getByLabel('Profile name').fill('Bob Example'); await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  assert.equal(await page.locator('.balance-value').textContent(), '₹0'); assert.equal(await page.getByText('Dummy lunch', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
+  await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
+  assert.equal(await page.getByText('First tab note', { exact: true }).count(), 1); assert.equal(await page.getByText('Stale tab note', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
+  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Delete profile', exact: true }).click(); await page.getByLabel('Confirm your password').fill('dummy-browser-password'); await page.getByRole('button', { name: 'Permanently delete my profile' }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
+  assert.equal([...store.profiles.values()].some(p => p.username === 'alice'), false);
+  assert.deepEqual(errors, []);
+  console.log('Browser checks passed: invite/profile UI, separate records, budget/expenses, dark/mobile accessibility, failed-save backup/retry, stale-tab conflicts, shared-browser logout locking, reload, record clearing and profile deletion.');
+} finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

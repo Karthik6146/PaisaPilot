@@ -1,0 +1,11 @@
+# Credentials are configured in Vercel's environment settings, never uploaded.
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+supabase/.temp/
+docs/screenshots/
+node_modules/
+dist/
+.git/
