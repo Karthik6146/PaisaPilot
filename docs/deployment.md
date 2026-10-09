@@ -23,6 +23,8 @@ Generate the secret locally: `node -e "console.log(require('node:crypto').random
 
 Redeploy after configuration. Use one canonical origin for sign-in. When adding a custom domain, change `APP_ORIGIN` and redirect other hostnames. Previews need their own exact origin and separate database/secrets. Never expose production secrets to untrusted branch previews. Missing configuration fails closed.
 
+Save all four variables in the **Production** environment before deploying. If Vercel blocks the commit author, set this repository's Git author email to the email connected to your Vercel/GitHub account before creating the next commit.
+
 For this first deployment, use your existing DATABASE_URL, INVITE_CODE and SESSION_SECRET from .env.local if you want to retain the profiles already created. Set APP_ORIGIN to your final HTTPS website origin instead of localhost. Changing hosts requires signing in again because cookies belong to the host. Do not run development experiments against the production database after launch. Keep preview deployments disconnected until you give them separate credentials and a database.
 
 ## Create your profile
