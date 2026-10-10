@@ -55,8 +55,9 @@ export const calculateStats = (
     .filter((t) => t.type === 'expense')
     .reduce((acc, t) => Math.round((acc + t.amount) * 100) / 100, 0);
 
-  // The entered allowance funds the plan; logged income is a separate ledger total.
-  const currentBalance = Math.round((budget.monthlyTarget - totalExpenses) * 100) / 100;
+  // Received money funds the month without changing the saved starting allowance.
+  const monthlyTarget = Math.round((budget.monthlyTarget + totalIncome) * 100) / 100;
+  const currentBalance = Math.round((monthlyTarget - totalExpenses) * 100) / 100;
   const remainingBudget = currentBalance;
 
   // Today's spending
@@ -67,7 +68,7 @@ export const calculateStats = (
   // Daily safe spending limit = available money / days left
   const effectivePool = Math.max(0, Math.round((remainingBudget - reserved) * 100) / 100);
   const dailySafeLimit = Math.floor(Math.round(effectivePool * 100) / daysRemaining) / 100;
-  const todayLimit = Math.max(0, budget.monthlyTarget - totalExpenses + spentToday - reserved) / daysRemaining;
+  const todayLimit = Math.max(0, monthlyTarget - totalExpenses + spentToday - reserved) / daysRemaining;
 
   let todayStatus: 'under' | 'warning' | 'over' = 'under';
   if (spentToday > todayLimit) {
@@ -112,7 +113,7 @@ export const calculateStats = (
     totalIncome,
     totalExpenses,
     currentBalance,
-    monthlyTarget: budget.monthlyTarget,
+    monthlyTarget,
     remainingBudget,
     daysPassedInMonth: daysPassed,
     daysRemainingInMonth: daysRemaining,
@@ -132,9 +133,7 @@ export const calculateStats = (
 
 export const generateAlerts = (
   stats: FinancialStats,
-  loans: LoanItem[],
-  budget: BudgetConfig,
-  _transactions: Transaction[]
+  loans: LoanItem[]
 ): AlertItem[] => {
   const alerts: AlertItem[] = [];
   const todayStr = localDate();
@@ -152,13 +151,13 @@ export const generateAlerts = (
   }
 
   // 2. Budget cap 85%+
-  const budgetRatio = stats.totalExpenses / (budget.monthlyTarget || 1);
+  const budgetRatio = stats.totalExpenses / (stats.monthlyTarget || 1);
   if (budgetRatio >= 0.85 && budgetRatio < 1) {
     alerts.push({
       id: 'alert-budget-85',
       type: 'warning',
       title: '⚠️ 85% of Monthly Target Reached',
-      message: `You have spent ₹${stats.totalExpenses} of ₹${budget.monthlyTarget}. Only ₹${stats.remainingBudget} left for this month.`,
+      message: `You have spent ₹${stats.totalExpenses} of ₹${stats.monthlyTarget}. Only ₹${stats.remainingBudget} left for this month.`,
       date: todayStr,
     });
   } else if (budgetRatio >= 1) {
@@ -166,7 +165,7 @@ export const generateAlerts = (
       id: 'alert-budget-exceeded',
       type: 'danger',
       title: '🛑 Monthly Target Exceeded',
-      message: `You've exceeded your monthly budget by ₹${stats.totalExpenses - budget.monthlyTarget}. Review your spending and adjust your plan.`,
+      message: `You've exceeded your monthly budget by ₹${stats.totalExpenses - stats.monthlyTarget}. Review your spending and adjust your plan.`,
       date: todayStr,
     });
   }

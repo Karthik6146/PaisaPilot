@@ -19,7 +19,7 @@ For local development, configure .env.local and visit its exact APP_ORIGIN. Miss
 
 Enter your monthly pocket money, create your own categories, and record each day's spending. Unpaid priorities reserve money; marking one paid creates its expense and releases the reservation. Notes and budgets belong to their selected month.
 
-Daily allowance is **max(0, remaining monthly budget − unpaid priorities) ÷ days left, including today**. Logged income is separate from the budget, so the same pocket money is not counted twice. Loans are tracked separately.
+Daily allowance is **max(0, remaining monthly budget − unpaid priorities) ÷ days left, including today**. The monthly budget is starting pocket money plus money received that month. Enter the initial allowance only in the budget; record additional receipts as income. Removing a receipt reduces available funds automatically. Loans are tracked separately.
 
 Profiles autosave to Postgres. Export backups regularly. If a save fails, current changes remain on screen and are included in exports; retry before leaving. Another tab's conflicting save is rejected rather than overwritten. Sign-out and profile switching lock other tabs, so export pending changes there first.
 

@@ -62,7 +62,14 @@ try {
   await page.getByRole('dialog').getByLabel('Note').fill('Money from Alex');
   await scan('money received form');
   await page.getByRole('button', { name: 'Save money received' }).click(); await saved();
-  assert.equal(await page.locator('.balance-value').textContent(), '₹4,900', 'Recording received money must not silently change the monthly spending plan.');
+  assert.equal(await page.locator('.balance-value').textContent(), '₹5,400', 'Received money must increase the remaining monthly budget.');
+  await page.getByRole('button', { name: 'Monthly budget', exact: true }).click();
+  assert.equal(await page.getByLabel('Monthly pocket money').inputValue(), '5000');
+  assert.ok((await page.locator('.allocation-summary').first().textContent()).includes('5,500'));
+  await page.getByLabel('Limit for Food', { exact: true }).fill('5500');
+  await page.getByRole('button', { name: 'Save monthly budget' }).click(); await saved();
+  await page.getByRole('button', { name: 'Dashboard', exact: true }).click();
+  assert.equal(await page.locator('.balance-value').textContent(), '₹5,400', 'Saving the plan must not count income twice.');
   const received = [...store.profiles.values()].find(p => p.username === 'alice').data.transactions.find(tx => tx.note === 'Money from Alex');
   assert.equal(received.type, 'income'); assert.equal(received.amount, 500); assert.equal(received.category, 'Gift');
   await page.getByRole('button', { name: 'Switch to dark mode' }).click(); await saved(); await scan('dark dashboard');
@@ -85,8 +92,8 @@ try {
   await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await credentials('bob'); await page.getByLabel('Profile name').fill('Bob Example'); await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹0'); assert.equal(await page.getByText('Dummy lunch', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
-  assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
-  await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
+  assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
+  await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
   assert.equal(await page.getByText('Money from Alex', { exact: true }).count(), 1);
   assert.equal(await page.getByText('First tab note', { exact: true }).count(), 1); assert.equal(await page.getByText('Stale tab note', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');

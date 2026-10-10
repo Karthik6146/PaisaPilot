@@ -13,7 +13,7 @@ async function load(path, dependencies = {}) {
   return { module: await import(url), url };
 }
 const dates = await load('src/utils/dates.ts');
-const { calculateStats } = (await load('src/utils/calculations.ts', { './dates': dates.url })).module;
+const { calculateStats, generateAlerts } = (await load('src/utils/calculations.ts', { './dates': dates.url })).module;
 const now = new Date(2026, 9, 9, 0, 15);
 const tx = (amount, date = '2026-10-09', type = 'expense') => ({ id: 'tx-' + amount, type, amount, category: 'My category', note: 'A note', date, paymentMode: 'Cash', createdAt: 1 });
 const budget = { monthlyTarget: 5000, categories: {} };
@@ -24,13 +24,34 @@ test('entered monthly pocket money funds the plan without an income record', () 
   assert.equal(stats.dailySafeLimit, 217.39);
   assert.equal(stats.daysRemainingInMonth, 23);
 });
-test('income does not double-count the monthly allowance and other months are isolated', () => {
-  const stats = calculateStats([tx(5000, '2026-10-01', 'income'), tx(100), tx(1000, '2026-09-30')], [], budget, now);
-  assert.equal(stats.totalIncome, 5000);
+test('received money increases the monthly budget and other months are isolated', () => {
+  const stats = calculateStats([tx(500, '2026-10-01', 'income'), tx(100), tx(1000, '2026-09-30', 'income')], [], budget, now);
+  assert.equal(stats.totalIncome, 500);
   assert.equal(stats.totalExpenses, 100);
-  assert.equal(stats.currentBalance, 4900);
+  assert.equal(stats.monthlyTarget, 5500);
+  assert.equal(stats.currentBalance, 5400);
+  assert.equal(stats.remainingBudget, 5400);
+  assert.equal(stats.dailySafeLimit, 234.78);
   assert.equal(stats.spentToday, 100);
   assert.equal(stats.todayStatus, 'under');
+});
+
+test('income works without a starting allowance and deletion releases only its funding', () => {
+  const received = tx(500, '2026-10-09', 'income');
+  const funded = calculateStats([received, tx(100)], [], { ...budget, monthlyTarget: 0 }, now, 50);
+  assert.equal(funded.currentBalance, 400);
+  assert.equal(funded.availableToSpend, 350);
+  assert.equal(funded.todayStartingLimit, 450 / 23);
+  assert.equal(calculateStats([tx(100)], [], { ...budget, monthlyTarget: 0 }, now).currentBalance, -100);
+  assert.equal(calculateStats([tx(0.1, '2026-10-09', 'income'), tx(0.2, '2026-10-09', 'income')], [], { ...budget, monthlyTarget: 0.3 }, now).monthlyTarget, 0.6);
+});
+
+test('budget alerts use starting pocket money plus receipts', () => {
+  const funded = calculateStats([tx(1000, '2026-10-09', 'income'), tx(5100)], [], budget, now);
+  const alerts = generateAlerts(funded, []);
+  assert.equal(alerts.some(a => a.id === 'alert-budget-exceeded'), false);
+  assert.ok(alerts.find(a => a.id === 'alert-budget-85').message.includes('6000'));
+  assert.ok(generateAlerts(calculateStats([tx(5100)], [], budget, now), []).some(a => a.id === 'alert-budget-exceeded'));
 });
 test('reserved priorities reduce daily available funds; paying them does not reduce free funds twice', () => {
   const before = calculateStats([], [], budget, now, 800);

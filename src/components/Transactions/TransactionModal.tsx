@@ -33,7 +33,7 @@ export function TransactionModal({ onClose, onSave, currencySymbol, initialType 
       <div className="form-grid"><label className="field">Date<input required type="date" max={localDate()} value={date} onChange={e => setDate(e.target.value)}/></label><label className="field">Payment method<select value={paymentMode} onChange={e => setPaymentMode(e.target.value as PaymentMode)}>{['UPI (GPay/PhonePe)', 'Cash', 'Bank Transfer', 'Card'].map(mode => <option key={mode}>{mode}</option>)}</select></label></div>
       {error && <p role="alert" className="error-text">{error}</p>}
       <button className="primary-button full-width" type="submit">{type === 'income' ? 'Save money received' : 'Save expense'}</button>
-      <p className="form-hint">Money received is saved as income. Change your monthly budget to include it in your spending plan.</p>
+      <p className="form-hint">Money received automatically increases the budget for the month of this entry.</p>
     </form>
   </dialog>;
 }

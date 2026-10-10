@@ -105,8 +105,8 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
   }, [transactions, loans, selectedBudget, referenceDate, reserved]);
 
   const rawAlerts = useMemo(() => {
-    return selectedMonth === calendarDate.slice(0, 7) && selectedBudget.monthlyTarget > 0 ? generateAlerts(stats, loans, selectedBudget, transactions) : [];
-  }, [stats, loans, selectedBudget, transactions, selectedMonth, calendarDate]);
+    return selectedMonth === calendarDate.slice(0, 7) && stats.monthlyTarget > 0 ? generateAlerts(stats, loans) : [];
+  }, [stats, loans, selectedMonth, calendarDate]);
 
   const activeAlerts = useMemo(() => {
     return rawAlerts.filter((a) => !dismissedAlerts.includes(a.id));
@@ -426,6 +426,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
             budget={selectedBudget}
             month={selectedMonth}
             transactions={transactions}
+            receivedIncome={stats.totalIncome}
             onSaveBudget={saveMonthBudget}
             currencySymbol={settings.currencySymbol}
           />
