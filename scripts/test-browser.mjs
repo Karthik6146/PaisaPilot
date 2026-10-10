@@ -53,6 +53,18 @@ try {
   await page.getByRole('button', { name: 'Add expense', exact: true }).click();
   await page.getByLabel('Amount').fill('100'); await page.getByLabel('Category', { exact: true }).fill('Food'); await page.getByRole('dialog').getByLabel('Note').fill('Dummy lunch');
   await page.getByRole('button', { name: 'Save expense' }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹4,900');
+  await page.getByRole('button', { name: 'Add money received', exact: true }).click();
+  await page.getByRole('heading', { name: 'Add money received', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Close transaction form' }).click();
+  await page.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await page.getByRole('button', { name: 'Money received', exact: true }).click();
+  await page.getByLabel('Amount').fill('500'); await page.getByLabel('Category', { exact: true }).fill('Gift');
+  await page.getByRole('dialog').getByLabel('Note').fill('Money from Alex');
+  await scan('money received form');
+  await page.getByRole('button', { name: 'Save money received' }).click(); await saved();
+  assert.equal(await page.locator('.balance-value').textContent(), '₹4,900', 'Recording received money must not silently change the monthly spending plan.');
+  const received = [...store.profiles.values()].find(p => p.username === 'alice').data.transactions.find(tx => tx.note === 'Money from Alex');
+  assert.equal(received.type, 'income'); assert.equal(received.amount, 500); assert.equal(received.category, 'Gift');
   await page.getByRole('button', { name: 'Switch to dark mode' }).click(); await saved(); await scan('dark dashboard');
   await page.setViewportSize({ width: 380, height: 850 }); await scan('mobile dashboard'); await page.screenshot({ path: 'docs/screenshots/profile-mobile.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1100 });
@@ -63,7 +75,7 @@ try {
   await page.getByRole('alert').filter({ hasText: 'Dummy save failure.' }).waitFor();
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await scan('profile settings');
   const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export backup' }).click(); const download = await downloadPromise;
-  const backup = JSON.parse(await readFile(await download.path(), 'utf8')); assert.equal(backup.transactions.length, 2); assert.ok(backup.transactions.some(t => t.note === 'Unsaved dummy snack'));
+  const backup = JSON.parse(await readFile(await download.path(), 'utf8')); assert.equal(backup.transactions.length, 3); assert.ok(backup.transactions.some(t => t.note === 'Unsaved dummy snack'));
   await page.getByRole('button', { name: 'Close settings' }).click(); failSave = false; await page.getByRole('button', { name: 'Retry saving' }).click(); await saved();
   const otherTab = await context.newPage(); await otherTab.goto(cfg.origin); await otherTab.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   await page.getByLabel('New budget note').fill('First tab note'); await page.getByRole('button', { name: 'Add note', exact: true }).click(); await saved();
@@ -75,6 +87,7 @@ try {
   await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
   await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹4,850');
+  assert.equal(await page.getByText('Money from Alex', { exact: true }).count(), 1);
   assert.equal(await page.getByText('First tab note', { exact: true }).count(), 1); assert.equal(await page.getByText('Stale tab note', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Delete profile', exact: true }).click(); await page.getByLabel('Confirm your password').fill('dummy-browser-password'); await page.getByRole('button', { name: 'Permanently delete my profile' }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
