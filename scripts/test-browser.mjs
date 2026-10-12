@@ -42,7 +42,11 @@ try {
   await page.setViewportSize({ width: 320, height: 850 }); await scan('mobile login');
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.getByRole('button', { name: 'Switch to light mode' }).click(); await page.setViewportSize({ width: 1440, height: 1100 });
+  await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click();
+  await page.getByRole('alert').filter({ hasText: 'For a new username, choose Create a profile first.' }).waitFor();
+  assert.equal(store.profiles.size, 0, 'Signing in must never create a profile automatically.');
   await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await scan('registration');
+  assert.equal(await page.getByRole('alert').count(), 0, 'Registration must clear the sign-in error.');
   await credentials('alice'); await page.getByLabel('Profile name').fill('Alice Example');
   await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹0'); await scan('new profile');
