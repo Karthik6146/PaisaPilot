@@ -48,7 +48,12 @@ try {
   await context.route('**/*', route => new URL(route.request().url()).origin === cfg.origin ? route.continue() : route.abort());
   const page = await context.newPage(); const errors = [];
   page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => dialog.accept());
-  const scan = async label => { await page.evaluate(async () => { await Promise.allSettled(document.getAnimations().map(animation => animation.finished)); }); await page.evaluate(axe.source); const result = await page.evaluate(async () => window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } })); assert.deepEqual(result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, issue: n.failureSummary })) })), [], 'Accessibility: ' + label); };
+  const scan = async (label, target = page, runOnly = { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] }) => {
+    await target.evaluate(async () => { await Promise.allSettled(document.getAnimations().map(animation => animation.finished)); });
+    await target.evaluate(axe.source);
+    const result = await target.evaluate(async runOnly => window.axe.run(document, { runOnly }), runOnly);
+    assert.deepEqual(result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, issue: n.failureSummary })) })), [], 'Accessibility: ' + label);
+  };
   const saved = () => page.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
   const credentials = async username => { await page.getByLabel('Invite code').fill(cfg.invite); await page.getByLabel('Username', { exact: true }).fill(username); await page.getByLabel('Password', { exact: true }).fill('dummy-browser-password'); };
   await mkdir('docs/screenshots', { recursive: true });
@@ -162,9 +167,7 @@ try {
   assert.equal(await nativePage.getByRole('button', { name: 'Workspace options' }).getAttribute('aria-expanded'), 'false');
   await nativePage.getByRole('button', { name: 'Lend & borrow', exact: true }).click();
   await nativePage.getByTitle('Add Lent Entry').click(); await nativePage.getByRole('dialog').waitFor();
-  await nativePage.evaluate(axe.source);
-  const loanIssues = await nativePage.evaluate(async () => (await window.axe.run(document.querySelector('dialog[open]'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } })).violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.failureSummary) })));
-  assert.deepEqual(loanIssues, [], 'Loan form accessibility');
+  await scan('lent loan form in light mode', nativePage);
   await back(); await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
   await nativePage.getByTitle('Add Lent Entry').click();
   await nativePage.getByLabel("Friend's name", { exact: true }).fill('Test friend');
@@ -177,6 +180,51 @@ try {
   await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
   const nativeLoan = [...store.profiles.values()].find(profile => profile.username === 'android_user').data.loans[0];
   assert.equal(nativeLoan.originalAmount, 100); assert.equal(nativeLoan.payments[0].amount, 25);
+  await nativePage.getByTitle('Add Borrowed Entry').click();
+  await nativePage.getByLabel("Friend's name", { exact: true }).fill('Test lender');
+  await nativePage.getByLabel('Loan amount', { exact: true }).fill('2000');
+  await nativePage.getByLabel('Expected return date', { exact: true }).fill('2025-01-01');
+  await scan('borrowed loan form in light mode', nativePage);
+  await nativePage.getByRole('button', { name: 'Save to Udhaar Tracker' }).click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  await nativePage.getByRole('button', { name: '1 Payments', exact: true }).click();
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') { await nativePage.getByRole('button', { name: 'Switch to dark mode' }).click(); await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor(); }
+    for (const width of [320, 380, 1440]) {
+      await nativePage.setViewportSize({ width, height: 1000 });
+      await scan('debt records ' + theme + ' at ' + width, nativePage);
+      assert.equal(await nativePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Debt actions fit the phone: ' + width);
+      if (width !== 320) { await nativePage.evaluate(() => { document.activeElement?.blur(); window.scrollTo(0, 0); }); await nativePage.screenshot({ path: 'docs/screenshots/debts-' + theme + '-' + width + '.png', fullPage: true }); }
+    }
+    for (const name of ['Lent (Owed to Me)', 'Borrowed (I Owe)', 'All Khata']) {
+      await nativePage.getByRole('button', { name, exact: true }).click();
+      await scan('debt filter ' + name + ' in ' + theme, nativePage);
+    }
+    await nativePage.getByRole('button', { name: 'Log Repayment', exact: true }).first().click();
+    await scan('repayment form in ' + theme, nativePage);
+    await back(); await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
+    await nativePage.getByTitle('Add Lent Entry').click();
+    await scan('lent loan form in ' + theme, nativePage);
+    await nativePage.getByRole('button', { name: 'I Borrowed (I Owe Them)', exact: true }).click();
+    await scan('borrowed loan form in ' + theme, nativePage);
+    await back(); await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
+    await nativePage.getByRole('button', { name: 'Calculators', exact: true }).click();
+    for (const name of ['Smart Note Calc', 'Tactile Keypad', 'Bill splitter', 'What-If Simulator']) {
+      await nativePage.getByRole('button', { name, exact: false }).click();
+      await scan('calculator contrast: ' + name + ' in ' + theme, nativePage, ['color-contrast']);
+    }
+    await nativePage.getByRole('button', { name: 'Lend & borrow', exact: true }).click();
+  }
+  await nativePage.getByRole('button', { name: 'Settle in Full', exact: true }).last().click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  await nativePage.getByRole('button', { name: 'Settled', exact: true }).click();
+  await scan('settled debts in dark mode', nativePage);
+  await nativePage.getByRole('button', { name: 'Switch to light mode' }).click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  await scan('settled debts in light mode', nativePage);
+  await nativePage.getByRole('button', { name: 'Both', exact: true }).click();
+  await scan('active and settled debts in light mode', nativePage);
+  await nativePage.setViewportSize({ width: 380, height: 850 });
   await back(); await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   await nativeContext.route('**/api/index?action=save', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Native save unavailable.' }) }));
   await nativePage.getByRole('button', { name: 'Add expense', exact: true }).click();

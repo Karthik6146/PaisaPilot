@@ -64,6 +64,8 @@ Verified on 2026-10-13: 29 unit/auth/mobile tests; browser and compact-layout ac
 
 Startup connection recovery is covered for website and native transport. On the real emulator, disabling Wi-Fi/data reproduced the unavailable screen; restoring connectivity and choosing **Try again** correctly opened sign-in and cleared the old error.
 
+Test version 1.0.1 (version code 2) improves the shared light-theme status colors and debt controls. Browser checks cover debt records at 320, 380 and 1440 pixels, selected filters, settled records, loan/repayment forms and calculator contrast in both themes. Install it over the previous APK to keep the app's session; both builds use the same local debug signing key.
+
 Before wider distribution, check on a physical phone: sign-out/sign-in, keyboard and cutouts, gesture and three-button navigation, JSON/CSV delivery to a receiving app, and airplane-mode save failure/recovery. Password recovery, offline writes, reminders, biometrics, iOS and Play Store submission are outside this first release.
 
 ## Design and dependency decisions

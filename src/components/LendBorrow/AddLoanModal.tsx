@@ -214,10 +214,10 @@ export const AddLoanModal: React.FC<AddLoanModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 rounded-2xl font-bold text-sm text-white shadow-lg transition-all ${
+              className={`w-full py-3 rounded-2xl font-bold text-sm text-white transition-all ${
                 type === 'lent'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20'
-                  : 'bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 shadow-rose-500/20'
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-rose-600 hover:bg-rose-700'
               }`}
             >
               Save to Udhaar Tracker

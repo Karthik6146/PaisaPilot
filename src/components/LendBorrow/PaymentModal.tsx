@@ -136,7 +136,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-2.5 rounded-2xl font-bold text-xs bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 transition-all"
+              className="primary-button w-full"
             >
               Record Repayment
             </button>

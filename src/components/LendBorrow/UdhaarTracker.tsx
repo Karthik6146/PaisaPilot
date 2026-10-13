@@ -93,9 +93,9 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="debt-tracker space-y-4">
       {/* Top Udhaar Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="debt-summary grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-between backdrop-blur-xl">
           <div>
             <div className="text-xs text-emerald-400 font-medium flex items-center gap-1.5">
@@ -161,8 +161,9 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
 
       {/* Filter and Control Bar */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 backdrop-blur-xl flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
+        <div className="flex flex-wrap items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800">
           <button
+            aria-pressed={activeTab === 'all'}
             onClick={() => {
               sound.click();
               setActiveTab('all');
@@ -174,6 +175,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
             All Khata
           </button>
           <button
+            aria-pressed={activeTab === 'lent'}
             onClick={() => {
               sound.click();
               setActiveTab('lent');
@@ -185,6 +187,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
             Lent (Owed to Me)
           </button>
           <button
+            aria-pressed={activeTab === 'borrowed'}
             onClick={() => {
               sound.click();
               setActiveTab('borrowed');
@@ -197,9 +200,10 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs">
             <button
+              aria-pressed={filterStatus === 'active'}
               onClick={() => {
                 sound.click();
                 setFilterStatus('active');
@@ -211,6 +215,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
               Active
             </button>
             <button
+              aria-pressed={filterStatus === 'settled'}
               onClick={() => {
                 sound.click();
                 setFilterStatus('settled');
@@ -222,6 +227,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
               Settled
             </button>
             <button
+              aria-pressed={filterStatus === 'all'}
               onClick={() => {
                 sound.click();
                 setFilterStatus('all');
@@ -239,10 +245,10 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
               sound.click();
               onOpenAddModal();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium shadow-lg shadow-purple-600/20 transition-all"
+            className="primary-button"
           >
             <Plus className="w-3.5 h-3.5" />
-            + New Debt / Udhaar
+            New Debt / Udhaar
           </button>
         </div>
       </div>
@@ -292,7 +298,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
                 key={loan.id}
                 className={`bg-slate-900/80 border rounded-2xl p-4 transition-all backdrop-blur-xl ${
                   loan.isSettled
-                    ? 'border-slate-800/60 opacity-70'
+                    ? 'border-slate-800/60'
                     : diffDays < 0
                     ? 'border-rose-500/30 bg-rose-950/10'
                     : 'border-slate-800 hover:border-slate-700'
@@ -379,7 +385,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
                   <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        loan.type === 'lent' ? 'bg-emerald-500' : 'bg-indigo-500'
+                        loan.type === 'lent' ? 'bg-emerald-500' : 'bg-rose-500'
                       }`}
                       style={{ width: `${progressPercent}%` }}
                     />
@@ -388,7 +394,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
 
                 {/* Action buttons */}
                 <div className="mt-3 flex items-center justify-between flex-wrap gap-2 pt-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {!loan.isSettled && (
                       <>
                         <button

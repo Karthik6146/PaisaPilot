@@ -27,7 +27,7 @@ html[data-theme='dark'] .access-example { border-color: #3a5042; }
 @media (max-width: 700px) { .access-page { grid-template-columns: 1fr; } .access-story { padding: 28px 24px; gap: 28px; } .access-story h1 { font-size: 38px; } .access-example, .access-footer { display: none; } .access-form-area { padding: 64px 24px 36px; } }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
-button, input, select, textarea { font: inherit; }
+button, input, select, textarea { font-family: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .5; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
@@ -43,7 +43,7 @@ button { transition: background .15s, color .15s, border-color .15s; }
 .brand small { display: block; font-size: 10px; color: #606f59; font-weight: 500; letter-spacing: .1px; margin-top: 4px; }
 .nav-caption { font-size: 9px; letter-spacing: 1.5px; font-weight: 700; color: #606f59; padding: 0 13px; margin: 47px 0 15px; }
 .sidebar nav { display: grid; gap: 7px; }
-.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 13px; border: none; border-radius: 9px; background: transparent; color: #6a786d; text-align: left; font-size: 12px; font-weight: 600; }
+.nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 13px; border: none; border-radius: 9px; background: transparent; color: #526454; text-align: left; font-size: 12px; font-weight: 600; }
 .nav-item:hover { background: #eef2e9; }
 .nav-item.active { background: #e8efdf; color: #2b573e; }
 .sidebar-tip { margin: 37px 8px 20px; background: #f0f3e8; border: 1px solid #e4e9db; padding: 19px 15px; border-radius: 12px; }
@@ -236,12 +236,47 @@ input::placeholder, textarea::placeholder { color: #606f59; }
 /* Keep the existing calculator and loan components consistent with the personal workspace. */
 .app-shell [class*="bg-slate-9"], .app-shell [class*="bg-slate-8"] { background-color: #fffefa; }
 .app-shell [class*="text-slate-1"], .app-shell [class*="text-slate-2"], .app-shell [class*="text-slate-3"] { color: #3f593c; }
-.app-shell [class*="text-slate-4"], .app-shell [class*="text-slate-5"] { color: #859576; }
+.app-shell [class*="text-slate-4"], .app-shell [class*="text-slate-5"] { color: #526454; }
 .app-shell [class*="border-slate-"] { border-color: #e0e7d5; }
-.app-shell [class*="from-purple"], .app-shell [class*="from-indigo"] { --tw-gradient-from: #3f7050; --tw-gradient-to: #3f7050; }
-.app-shell [class*="to-indigo"], .app-shell [class*="to-purple"] { --tw-gradient-to: #557b45; }
-.app-shell [class*="text-purple-"], .app-shell [class*="text-indigo-"] { color: #688650; }
+.app-shell :is([class*="from-purple"], [class*="from-indigo"]) { background-image: none; background-color: #285b44; box-shadow: none; }
+.app-shell [class*="from-emerald"] { background-image: none; background-color: #087443; box-shadow: none; }
+.app-shell [class*="from-amber"] { background-image: none; background-color: #8b5312; box-shadow: none; }
+.app-shell [class*="text-purple-"], .app-shell [class*="text-indigo-"] { color: #2c6249; }
 .app-shell [class*="bg-purple-"], .app-shell [class*="bg-indigo-"] { background-color: #e7efdb; }
+/* Light surfaces need darker status ink; keep the bright shades for dark mode. */
+:root:not([data-theme="dark"]) .app-shell {
+  --lent-ink: #087443;
+  --lent-surface: #e4f4eb;
+  --lent-border: #a8d6bc;
+  --borrowed-ink: #b32745;
+  --borrowed-surface: #fff0f2;
+  --borrowed-border: #efb5c3;
+  --reminder-ink: #086d72;
+  --reminder-surface: #e4f4f4;
+  --reminder-border: #a8d7d8;
+  --due-ink: #8b5312;
+  --due-surface: #fff3df;
+  --due-border: #e6c68f;
+  :is(.text-emerald-300, .text-emerald-400) { color: var(--lent-ink); }
+  :is(.text-rose-300, .text-rose-400) { color: var(--borrowed-ink); }
+  .text-teal-300 { color: var(--reminder-ink); }
+  .text-blue-300 { color: #1859a1; }
+  .text-pink-300 { color: var(--borrowed-ink); }
+  :is(.text-amber-300, .text-amber-400) { color: var(--due-ink); }
+  :is([class*="bg-emerald-950/"], [class*="bg-emerald-500/"]) { background-color: var(--lent-surface); }
+  :is([class*="bg-rose-950/"], [class*="bg-rose-500/"]) { background-color: var(--borrowed-surface); }
+  [class*="bg-teal-500/"] { background-color: var(--reminder-surface); }
+  [class*="bg-amber-500/"] { background-color: var(--due-surface); }
+  [class*="border-emerald-"] { border-color: var(--lent-border); }
+  [class*="border-rose-"] { border-color: var(--borrowed-border); }
+  [class*="border-teal-"] { border-color: var(--reminder-border); }
+  [class*="border-amber-"] { border-color: var(--due-border); }
+  .bg-emerald-500 { background-color: var(--lent-ink); }
+  .bg-rose-500 { background-color: var(--borrowed-ink); }
+  button:is([class*="bg-emerald-500/"], [class*="bg-rose-500/"], [class*="bg-teal-500/"]):hover { filter: brightness(.95); }
+  .debt-summary button { color: #fff; background-color: var(--lent-ink); }
+  .debt-summary button[class*="bg-rose-"] { background-color: var(--borrowed-ink); }
+}
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-thumb { background: #c7d3b8; border-radius: 5px; }
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -293,6 +328,13 @@ input::placeholder, textarea::placeholder { color: #606f59; }
 [data-theme="dark"] .app-shell [class*="border-slate-"] { border-color: var(--dark-border); }
 [data-theme="dark"] .app-shell :is([class*="bg-purple-"], [class*="bg-indigo-"]) { background-color: var(--dark-soft); }
 [data-theme="dark"] .app-shell :is([class*="text-purple-"], [class*="text-indigo-"]) { color: var(--dark-accent); }
+.app-shell .bg-purple-600 { background-color: #2c6249; color: #fff; }
+.app-shell .bg-purple-600:hover { background-color: #224e39; }
+.app-shell .bg-emerald-600 { background-color: #087443; color: #fff; }
+.app-shell .bg-rose-600 { background-color: #b32745; color: #fff; }
+.debt-summary button { min-width: 48px; min-height: 48px; }
+.debt-tracker button[aria-pressed="true"].bg-slate-800 { background-color: #e4eddf; color: #2c6249; box-shadow: inset 0 0 0 1px currentColor; }
+[data-theme="dark"] .debt-tracker button[aria-pressed="true"].bg-slate-800 { background-color: #2b3c2d; color: var(--dark-accent); }
 [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #506448; }
 @media (max-width: 640px) {
   .sidebar-bottom .theme-toggle { font-size: 0; padding: 7px; gap: 0; }
@@ -344,6 +386,7 @@ input::placeholder, textarea::placeholder { color: #606f59; }
   .loan-dialog { padding: 0; }
   .loan-dialog :is(input, button) { min-height: 48px; }
   .loan-dialog input { font-size: 16px; }
+  .debt-tracker button { min-height: 48px; }
   .transaction-description strong, .transaction-amount { font-size: 14px; }
   .transaction-description small, .transaction-row time, .summary-strip small { font-size: 12px; }
   .transaction-row .transaction-icon { width: 32px; height: 32px; flex-shrink: 0; }
