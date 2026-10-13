@@ -29,6 +29,21 @@ cfg.origin = 'http://127.0.0.1:' + server.address().port;
 let browser;
 try {
   browser = await chromium.launch({ channel: 'chrome', headless: true });
+  for (const native of [false, true]) {
+    const recoveryContext = await browser.newContext();
+    if (native) await recoveryContext.addInitScript(nativeBridge, cfg.origin);
+    let disconnected = true;
+    await recoveryContext.route('**/api/index?action=session', route => disconnected ? route.abort('connectionfailed') : route.continue());
+    const recoveryPage = await recoveryContext.newPage();
+    await recoveryPage.goto(cfg.origin);
+    await recoveryPage.getByRole('heading', { name: 'Workspace unavailable' }).waitFor();
+    await recoveryPage.getByRole('alert').filter({ hasText: 'Connection interrupted' }).waitFor();
+    disconnected = false;
+    await recoveryPage.getByRole('button', { name: 'Try again', exact: true }).click();
+    await recoveryPage.getByRole('heading', { name: 'Welcome back.' }).waitFor({ timeout: 5000 });
+    assert.equal(await recoveryPage.getByRole('alert').count(), 0, 'Recovered sign-in must clear the stale connection error: ' + (native ? 'Android' : 'website'));
+    await recoveryContext.close();
+  }
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, timezoneId: 'Asia/Kolkata' });
   await context.route('**/*', route => new URL(route.request().url()).origin === cfg.origin ? route.continue() : route.abort());
   const page = await context.newPage(); const errors = [];
@@ -177,5 +192,5 @@ try {
   await nativePage.waitForFunction(() => window.nativeTest.minimized === 1);
   await nativeContext.close();
   assert.deepEqual(errors, []);
-  console.log('Browser checks passed: invite/profile UI, separate records, budget/expenses, dark/mobile accessibility, failed-save backup/retry, stale-tab conflicts, shared-browser logout locking, reload, record clearing and profile deletion.');
+  console.log('Browser checks passed: startup connection recovery on web/Android, invite/profile UI, separate records, budget/expenses, dark/mobile accessibility, failed-save backup/retry, stale-tab conflicts, shared-browser logout locking, reload, record clearing and profile deletion.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

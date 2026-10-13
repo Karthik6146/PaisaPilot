@@ -62,6 +62,8 @@ It needs the owner's local `.env.local` with `DATABASE_URL` and `INVITE_CODE`. I
 
 Verified on 2026-10-13: 29 unit/auth/mobile tests; browser and compact-layout accessibility checks; Android debug build and lint; one installed-package security test; Android 16/API 36 emulator signup, budget/receipt/expense saves, correct balance, dark system bars, Back, backup share-sheet open/cancel, force-stop session/data persistence, HttpOnly cookie protection and profile deletion. Dependency audit reported zero known vulnerabilities. Android app lint has six non-blocking warnings, mainly upstream version notices and generated resource references.
 
+Startup connection recovery is covered for website and native transport. On the real emulator, disabling Wi-Fi/data reproduced the unavailable screen; restoring connectivity and choosing **Try again** correctly opened sign-in and cleared the old error.
+
 Before wider distribution, check on a physical phone: sign-out/sign-in, keyboard and cutouts, gesture and three-button navigation, JSON/CSV delivery to a receiving app, and airplane-mode save failure/recovery. Password recovery, offline writes, reminders, biometrics, iOS and Play Store submission are outside this first release.
 
 ## Design and dependency decisions

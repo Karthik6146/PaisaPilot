@@ -29,7 +29,7 @@ export default function Workspace() {
       const next: Session = { ...result, data: parseSnapshot(result.data) };
       auth.current = next; pending.current = null; setSession(next); setError(''); setStatus('Saved to your profile');
     } catch (error) {
-      if (error instanceof RequestError && error.status === 401) { auth.current = null; setSession(null); }
+      if (error instanceof RequestError && error.status === 401) { auth.current = null; setSession(null); setError(''); }
       else throw error;
     }
   }, []);
