@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, DollarSign } from 'lucide-react';
 import { LoanItem } from '../../types/finance';
 import { localDate } from '../../utils/dates';
@@ -22,6 +22,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(() => localDate());
   const [note, setNote] = useState('UPI repayment');
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement;
+    const element = dialog.current;
+    if (isOpen) { element?.showModal(); element?.querySelector('input')?.focus(); }
+    return () => { element?.close(); previous?.focus(); };
+  }, [isOpen]);
 
   if (!isOpen || !loan) return null;
 
@@ -44,10 +51,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+    <dialog ref={dialog} className="personal-dialog loan-dialog" aria-labelledby="repayment-title" onCancel={onClose}>
       <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl relative">
         <button
           onClick={onClose}
+          aria-label="Close repayment form"
           className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-xl bg-slate-800/60"
         >
           <X className="w-5 h-5" />
@@ -58,7 +66,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <DollarSign className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-100">Log Repayment</h3>
+            <h2 id="repayment-title" className="text-base font-bold text-slate-100">Log Repayment</h2>
             <p className="text-xs text-slate-400">
               {loan.type === 'lent' ? `From ${loan.personName}` : `Paid to ${loan.personName}`}
             </p>
@@ -87,6 +95,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
             <input
               type="number"
+              aria-label="Repayment amount"
+              inputMode="decimal"
               required
               min="0.01"
               max={remainingDue}
@@ -102,6 +112,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <label className="text-xs text-slate-400 font-medium block mb-1">Date</label>
             <input
               type="date"
+              aria-label="Repayment date"
+              required
               value={date}
               onChange={(e) => setDate(e.target.value)}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-indigo-500"
@@ -112,6 +124,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <label className="text-xs text-slate-400 font-medium block mb-1">Note / Payment Method</label>
             <input
               type="text"
+              aria-label="Note or payment method"
               maxLength={500}
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -130,7 +143,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </dialog>
   );
 };
 

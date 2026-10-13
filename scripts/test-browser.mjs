@@ -6,6 +6,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { createHandler } from '../server/handler.mjs';
 import { memoryStore } from './fixtures/profile-store.mjs';
+import { nativeBridge } from './fixtures/native-bridge.mjs';
 
 const store = memoryStore();
 const cfg = { origin: '', production: false, invite: '102030', secret: 'dummy-browser-test-secret-'.repeat(2), database: 'unused' };
@@ -78,6 +79,25 @@ try {
   assert.equal(received.type, 'income'); assert.equal(received.amount, 500); assert.equal(received.category, 'Gift');
   await page.getByRole('button', { name: 'Switch to dark mode' }).click(); await saved(); await scan('dark dashboard');
   await page.setViewportSize({ width: 380, height: 850 }); await scan('mobile dashboard'); await page.screenshot({ path: 'docs/screenshots/profile-mobile.png', fullPage: true });
+  for (const width of [320, 640]) {
+    await page.setViewportSize({ width, height: 850 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'No horizontal scrolling on phones.');
+    const nav = page.getByRole('navigation', { name: 'Main navigation' });
+    const bounds = await nav.boundingBox();
+    assert.ok(bounds.y + bounds.height <= 851 && bounds.y > 700, 'Phone navigation stays at the bottom.');
+    for (const button of await nav.getByRole('button').all()) {
+      const box = await button.boundingBox(); assert.ok(box.width >= 48 && box.height >= 48);
+    }
+    await page.getByRole('button', { name: 'Workspace options', exact: true }).click();
+    await page.getByRole('button', { name: 'Sign out', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Settings & backup', exact: true }).click();
+    await page.getByRole('dialog').waitFor(); await scan('phone settings ' + width);
+    await page.getByRole('button', { name: 'Close settings', exact: true }).click();
+    await page.getByRole('button', { name: 'Spending history', exact: true }).click();
+    await page.getByRole('heading', { name: 'Spending history', exact: true }).waitFor();
+    await scan('phone history ' + width);
+    await page.getByRole('button', { name: 'Dashboard', exact: true }).click();
+  }
   await page.setViewportSize({ width: 1440, height: 1100 });
   // A failed server save must preserve current edits and export them, rather than old persisted data.
   let failSave = true;
@@ -103,6 +123,59 @@ try {
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Delete profile', exact: true }).click(); await page.getByLabel('Confirm your password').fill('dummy-browser-password'); await page.getByRole('button', { name: 'Permanently delete my profile' }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
   assert.equal([...store.profiles.values()].some(p => p.username === 'alice'), false);
+  const nativeContext = await browser.newContext({ viewport: { width: 380, height: 850 } });
+  await nativeContext.addInitScript(nativeBridge, cfg.origin);
+  const nativePage = await nativeContext.newPage();
+  nativePage.on('pageerror', error => errors.push(error.message));
+  nativePage.on('dialog', dialog => dialog.accept());
+  await nativePage.goto(cfg.origin);
+  await nativePage.getByRole('button', { name: 'Create a profile', exact: true }).click();
+  await nativePage.getByLabel('Invite code').fill(cfg.invite);
+  await nativePage.getByLabel('Profile name').fill('Android Example');
+  await nativePage.getByLabel('Username', { exact: true }).fill('android_user');
+  await nativePage.getByLabel('Password', { exact: true }).fill('dummy-browser-password');
+  await nativePage.getByRole('button', { name: 'Create my profile' }).click();
+  await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  const back = () => nativePage.evaluate(() => window.nativeTest.events('backButton'));
+  await nativePage.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await nativePage.getByRole('dialog').waitFor(); await back();
+  await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
+  await nativePage.getByRole('button', { name: 'Monthly budget', exact: true }).click();
+  await nativePage.getByRole('heading', { name: 'Give your month a plan.' }).waitFor(); await back();
+  await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await nativePage.getByRole('button', { name: 'Workspace options' }).click(); await back();
+  assert.equal(await nativePage.getByRole('button', { name: 'Workspace options' }).getAttribute('aria-expanded'), 'false');
+  await nativePage.getByRole('button', { name: 'Lend & borrow', exact: true }).click();
+  await nativePage.getByTitle('Add Lent Entry').click(); await nativePage.getByRole('dialog').waitFor();
+  await nativePage.evaluate(axe.source);
+  const loanIssues = await nativePage.evaluate(async () => (await window.axe.run(document.querySelector('dialog[open]'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } })).violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.failureSummary) })));
+  assert.deepEqual(loanIssues, [], 'Loan form accessibility');
+  await back(); await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
+  await nativePage.getByTitle('Add Lent Entry').click();
+  await nativePage.getByLabel("Friend's name", { exact: true }).fill('Test friend');
+  await nativePage.getByLabel('Loan amount', { exact: true }).fill('100');
+  await nativePage.getByRole('button', { name: 'Save to Udhaar Tracker' }).click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  await nativePage.getByRole('button', { name: 'Log Repayment', exact: true }).click();
+  await nativePage.getByLabel('Repayment amount', { exact: true }).fill('25');
+  await nativePage.getByRole('button', { name: 'Record Repayment', exact: true }).click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  const nativeLoan = [...store.profiles.values()].find(profile => profile.username === 'android_user').data.loans[0];
+  assert.equal(nativeLoan.originalAmount, 100); assert.equal(nativeLoan.payments[0].amount, 25);
+  await back(); await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await nativeContext.route('**/api/index?action=save', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Native save unavailable.' }) }));
+  await nativePage.getByRole('button', { name: 'Add expense', exact: true }).click();
+  await nativePage.getByLabel('Amount').fill('25'); await nativePage.getByLabel('Category', { exact: true }).fill('Food');
+  await nativePage.getByRole('button', { name: 'Save expense', exact: true }).click();
+  await nativePage.getByRole('alert').filter({ hasText: 'Native save unavailable.' }).waitFor();
+  await back();
+  assert.equal(await nativePage.evaluate(() => window.nativeTest.minimized), 0, 'Back must not hide unsaved records.');
+  await nativeContext.unroute('**/api/index?action=save');
+  await nativePage.getByRole('button', { name: 'Retry saving' }).click();
+  await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
+  await back();
+  await nativePage.waitForFunction(() => window.nativeTest.minimized === 1);
+  await nativeContext.close();
   assert.deepEqual(errors, []);
   console.log('Browser checks passed: invite/profile UI, separate records, budget/expenses, dark/mobile accessibility, failed-save backup/retry, stale-tab conflicts, shared-browser logout locking, reload, record clearing and profile deletion.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

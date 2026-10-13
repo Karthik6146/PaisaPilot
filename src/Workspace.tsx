@@ -3,6 +3,9 @@ import App from './App';
 import { AccessScreen } from './components/Access/AccessScreen';
 import { request, RequestError } from './utils/profileClient';
 import { parseSnapshot, type Snapshot } from '../shared/finance.mjs';
+import { Capacitor } from '@capacitor/core';
+import { App as NativeApp } from '@capacitor/app';
+import { clearExpiredExports } from './utils/exportFile';
 
 interface Session { profile: { id: string; username: string }; data: Snapshot; revision: number; csrf: string; }
 export default function Workspace() {
@@ -72,13 +75,22 @@ export default function Workspace() {
     timer.current = setTimeout(() => { void flush().catch(() => {}); }, 500);
   }, [flush]);
   useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    void clearExpiredExports().catch(() => {});
+    const listener = NativeApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) window.dispatchEvent(new Event('focus'));
+      else void flush().catch(() => {});
+    });
+    return () => { void listener.then(handle => handle.remove()); };
+  }, [flush]);
+  useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => { if (pending.current || saving.current) { event.preventDefault(); event.returnValue = ''; } };
     window.addEventListener('beforeunload', warn);
     return () => { window.removeEventListener('beforeunload', warn); clearTimeout(timer.current); };
   }, []);
   const logout = async () => {
     if (leaving.current) return;
-    if (!window.confirm('Sign out of this browser? Other open tabs will lock and discard unsaved changes. Export a backup there first.')) return;
+    if (!window.confirm('Sign out on this device? Other open tabs will lock and discard unsaved changes. Export a backup there first.')) return;
     leaving.current = true;
     try { await flush(); await request('logout', 'POST', undefined, auth.current?.csrf); auth.current = null; setSession(null); setError(''); channel.current?.postMessage('changed'); }
     catch (error) { setError(error instanceof Error ? error.message : 'Sign-out failed.'); }

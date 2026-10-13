@@ -15,6 +15,10 @@ npm run dev
 
 For local development, configure .env.local and visit its exact APP_ORIGIN. Missing API/database configuration fails closed; this is no longer a browser-only static app.
 
+## Android app
+
+The Android app uses the same private profiles as the website. Run `npm run android:build` with Java 21 and Android SDK 36 installed to create `artifacts/PaisaPilot-debug.apk`. See [Android setup, install steps and limitations](docs/ANDROID.md).
+
 ## Your budget
 
 Enter your monthly pocket money, create your own categories, and record each day's spending. Unpaid priorities reserve money; marking one paid creates its expense and releases the reservation. Notes and budgets belong to their selected month.

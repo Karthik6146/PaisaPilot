@@ -28,6 +28,10 @@ import { emptySnapshot, parseBackup, exportBackup } from './utils/storage';
 import { validMoney, validDate, type Snapshot } from '../shared/finance.mjs';
 import { calculateStats, generateAlerts } from './utils/calculations';
 import { sound } from './utils/sound';
+import { Capacitor } from '@capacitor/core';
+import { App as NativeApp } from '@capacitor/app';
+import { exportFile } from './utils/exportFile';
+import { applyTheme } from './utils/theme';
 
 interface AppProps {
   initialData: Snapshot; onChange: (data: Snapshot) => void;
@@ -41,7 +45,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
   const [budget, setBudget] = useState<BudgetConfig>(initialData.budget);
   const [settings, setSettings] = useState<UserSettings>(initialData.settings);
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = settings.theme || 'light';
+    applyTheme(settings.theme || 'light');
   }, [settings.theme]);
 
   const [selectedMonth, setSelectedMonth] = useState(() => localDate().slice(0, 7));
@@ -86,6 +90,21 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAlertsDrawerOpen, setIsAlertsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const listener = NativeApp.addListener('backButton', () => {
+      const dialog = document.querySelector<HTMLDialogElement>('dialog[open]');
+      if (dialog) { dialog.dispatchEvent(new Event('cancel', { cancelable: true })); return; }
+      const menu = document.querySelector<HTMLButtonElement>('.mobile-menu-toggle[aria-expanded="true"]');
+      if (menu) { menu.click(); return; }
+      if (isAlertsDrawerOpen) { setIsAlertsDrawerOpen(false); return; }
+      if (activeTab !== 'overview') { setActiveTab('overview'); return; }
+      if (saveStatus !== 'Saved to your profile') { onRetry(); window.alert('Your latest changes are not saved yet. Wait for Saved to your profile, or export a backup in Settings.'); return; }
+      void NativeApp.minimizeApp();
+    });
+    return () => { void listener.then(handle => handle.remove()); };
+  }, [activeTab, isAlertsDrawerOpen, saveStatus, onRetry]);
 
   // Sync sound settings with audio manager
   useEffect(() => {
@@ -274,15 +293,9 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
     handleOpenAddTx('expense', amount, note);
   };
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     const jsonStr = exportBackup({ transactions, loans, budget, settings });
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `paisapilot_backup_${localDate()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    await exportFile(`paisapilot_backup_${localDate()}.json`, jsonStr, 'application/json');
   };
 
   const handleImportData = (jsonStr: string) => {
@@ -433,7 +446,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
         )}
       </main>
 
-      <footer className="workspace-footer"><span><span className="footer-dot"/> A little progress, every day.</span><span>Personal finance - Stored on this device</span></footer>
+      <footer className="workspace-footer"><span><span className="footer-dot"/> A little progress, every day.</span><span>Saved to your private profile · Internet required</span></footer>
       </div>
 
       {/* Modals */}
