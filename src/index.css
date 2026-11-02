@@ -398,3 +398,49 @@ input::placeholder, textarea::placeholder { color: #606f59; }
   .access-form-area { padding: 32px 24px; }
   [data-theme="dark"] .sidebar nav, [data-theme="dark"] .sidebar-bottom.mobile-open { background: #151f18; border-color: var(--dark-border); }
 }
+
+/* Category combobox: themed replacement for the native datalist popup. */
+.category-combobox { position: relative; }
+.combobox-control { position: relative; }
+.combobox-control input { padding-right: 38px; }
+.combobox-chevron { position: absolute; right: 12px; top: calc(50% + 3.5px); translate: 0 -50%; color: #85907e; pointer-events: none; transition: rotate .2s var(--ease-out); }
+.category-combobox:has([aria-expanded="true"]) .combobox-chevron { rotate: 180deg; }
+.combobox-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px); max-height: 232px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 6px; list-style: none; background: #fffefa; border: 1px solid #dfe5d5; border-radius: 11px; box-shadow: 0 14px 36px #243d2a26; transform-origin: top; animation: pop-in .16s var(--ease-out); }
+.combobox-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 7px; font-size: 12px; font-weight: 500; color: #334a33; cursor: pointer; transition: background .12s, color .12s; overflow-wrap: anywhere; }
+.combobox-option svg { flex-shrink: 0; color: #3d7256; }
+.combobox-option.active { background: #eef2e6; color: #2b573e; }
+.combobox-option.create { justify-content: flex-start; color: #2c6249; font-weight: 600; }
+.combobox-option + .combobox-option.create { margin-top: 4px; box-shadow: 0 -1px 0 #edf0e5; }
+[data-theme="dark"] .combobox-list { background: var(--dark-panel); border-color: var(--dark-border); box-shadow: 0 14px 36px #00000070; }
+[data-theme="dark"] .combobox-option { color: #e3eee4; }
+[data-theme="dark"] .combobox-option.active { background: #2b3c2d; color: var(--dark-accent); }
+[data-theme="dark"] :is(.combobox-option.create, .combobox-option svg) { color: var(--dark-accent); }
+[data-theme="dark"] .combobox-option + .combobox-option.create { box-shadow: 0 -1px 0 var(--dark-border); }
+[data-theme="dark"] .combobox-chevron { color: var(--dark-muted); }
+@media (max-width: 640px) { .combobox-option { min-height: 44px; font-size: 15px; } .combobox-list { max-height: 260px; } }
+
+/* Motion: short ease-out entrances using transform/opacity. The reduced-motion rule above turns all of it off. */
+:root { --ease-out: cubic-bezier(.22, 1, .36, 1); transition: background-color .25s; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+@keyframes backdrop-in { from { opacity: 0; } }
+@keyframes grow-x { from { transform: scaleX(0); } }
+@keyframes grow-y { from { transform: scaleY(0); } }
+button { transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .12s var(--ease-out); }
+:is(.primary-button, .secondary-button, .danger-button, .quick-amounts button, .nav-item, .icon-button, .segmented button, .text-button):active:not(:disabled) { transform: scale(.97); }
+.primary-button:hover:not(:disabled) { box-shadow: 0 6px 16px #2c624933; }
+.tab-view { animation: rise-in .35s var(--ease-out); }
+.personal-dialog[open] { animation: dialog-in .28s var(--ease-out); }
+.personal-dialog[open]::backdrop { animation: backdrop-in .25s ease-out; }
+:is(.transaction-row, .priority-row, .note-card, .category-item) { animation: rise-in .3s var(--ease-out) backwards; }
+:is(.transaction-row, .priority-row, .note-card, .category-item):nth-child(2) { animation-delay: 30ms; }
+:is(.transaction-row, .priority-row, .note-card, .category-item):nth-child(3) { animation-delay: 60ms; }
+:is(.transaction-row, .priority-row, .note-card, .category-item):nth-child(4) { animation-delay: 90ms; }
+:is(.transaction-row, .priority-row, .note-card, .category-item):nth-child(5) { animation-delay: 120ms; }
+:is(.transaction-row, .priority-row, .note-card, .category-item):nth-child(n+6) { animation-delay: 150ms; }
+:is(.balance-progress, .category-track) > span { transform-origin: left; animation: grow-x .7s var(--ease-out) backwards .1s; transition: width .5s var(--ease-out); }
+.chart-bar { transform-origin: bottom; animation: grow-y .6s var(--ease-out) backwards .1s; transition: height .4s var(--ease-out); }
+:is(.sidebar, .workspace-header, .panel, .summary-strip, .personal-dialog, .month-picker) { transition: background-color .25s, border-color .25s, color .25s; }
+.field :is(input, select, textarea) { transition: border-color .15s, box-shadow .15s, background-color .25s; }
+.field :is(input, select, textarea):focus { border-color: #75a18b; box-shadow: 0 0 0 3px #75a18b26; }

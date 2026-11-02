@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Transaction, TransactionType, PaymentMode } from '../../types/finance';
 import { localDate } from '../../utils/dates';
+import { CategoryCombobox } from '../CategoryCombobox';
 
 interface Props {
   isOpen: boolean; onClose: () => void; onSave: (data: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -28,7 +29,7 @@ export function TransactionModal({ onClose, onSave, currencySymbol, initialType 
       <div className="segmented"><button type="button" aria-pressed={type === 'expense'} className={type === 'expense' ? 'selected' : ''} onClick={() => { setType('expense'); setCategory(''); }}><ArrowUpRight size={16}/>Expense</button><button type="button" aria-pressed={type === 'income'} className={type === 'income' ? 'selected' : ''} onClick={() => { setType('income'); setCategory(''); }}><ArrowDownLeft size={16}/>Money received</button></div>
       <label className="field">Amount ({currencySymbol})<input type="number" inputMode="decimal" min="0.01" step="0.01" max="1000000000" required value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" className="amount-input"/></label>
       <div className="quick-amounts">{[50, 100, 200, 500].map(value => <button type="button" key={value} onClick={() => setAmount(String(value))}>{currencySymbol}{value}</button>)}</div>
-      <label className="field">Category<input list="category-options" required maxLength={60} value={category} onChange={e => setCategory(e.target.value)} placeholder="Choose or create a category"/><datalist id="category-options">{categories.map(cat => <option key={cat} value={cat}/>)}</datalist></label>
+      <CategoryCombobox label="Category" categories={categories} value={category} onChange={setCategory} placeholder="Choose or create a category"/>
       <label className="field">Note <span className="muted">(optional)</span><textarea rows={2} maxLength={500} value={note} onChange={e => setNote(e.target.value)} placeholder={type === 'income' ? 'Who gave you the money? What was it for?' : 'What was this for?'}/></label>
       <div className="form-grid"><label className="field">Date<input required type="date" max={localDate()} value={date} onChange={e => setDate(e.target.value)}/></label><label className="field">Payment method<select value={paymentMode} onChange={e => setPaymentMode(e.target.value as PaymentMode)}>{['UPI (GPay/PhonePe)', 'Cash', 'Bank Transfer', 'Card'].map(mode => <option key={mode}>{mode}</option>)}</select></label></div>
       {error && <p role="alert" className="error-text">{error}</p>}

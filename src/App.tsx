@@ -375,6 +375,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
           </div>
         )}
 
+        <div key={activeTab} className="tab-view">
         {/* Tab 1: Overview */}
         {activeTab === 'overview' && (
           <Overview
@@ -444,6 +445,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
             currencySymbol={settings.currencySymbol}
           />
         )}
+        </div>
       </main>
 
       <footer className="workspace-footer"><span><span className="footer-dot"/> A little progress, every day.</span><span>Saved to your private profile · Internet required</span></footer>
