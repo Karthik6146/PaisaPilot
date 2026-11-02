@@ -17,6 +17,7 @@ import {
 import { LoanItem, LoanType } from '../../types/finance';
 import { localDate } from '../../utils/dates';
 import { sound } from '../../utils/sound';
+import { confirmAction, notify } from '../ConfirmDialog';
 
 interface UdhaarTrackerProps {
   loans: LoanItem[];
@@ -88,7 +89,7 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
       window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank', 'noopener,noreferrer');
     } else {
       // Copy to clipboard
-      navigator.clipboard.writeText(text).then(() => alert('Reminder copied. Paste it to your friend.')).catch(() => alert('Clipboard unavailable. Please copy the reminder manually.'));
+      navigator.clipboard.writeText(text).then(() => notify('Reminder copied. Paste it to your friend.')).catch(() => notify('Clipboard unavailable. Please copy the reminder manually.'));
     }
   };
 
@@ -437,8 +438,8 @@ export const UdhaarTracker: React.FC<UdhaarTrackerProps> = ({
                       </button>
                     )}
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete debt record for ${loan.personName}?`)) {
+                      onClick={async () => {
+                        if (await confirmAction(`Delete debt record for ${loan.personName}?`, { confirmLabel: 'Delete', danger: true })) {
                           onDeleteLoan(loan.id);
                         }
                       }}

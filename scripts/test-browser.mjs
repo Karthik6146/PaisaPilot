@@ -54,6 +54,7 @@ try {
     const result = await target.evaluate(async runOnly => window.axe.run(document, { runOnly }), runOnly);
     assert.deepEqual(result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, issue: n.failureSummary })) })), [], 'Accessibility: ' + label);
   };
+  const confirm = (target = page) => target.getByRole('alertdialog').getByRole('button').last().click();
   const saved = () => page.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
   const credentials = async username => { await page.getByLabel('Invite code').fill(cfg.invite); await page.getByLabel('Username', { exact: true }).fill(username); await page.getByLabel('Password', { exact: true }).fill('dummy-browser-password'); };
   await mkdir('docs/screenshots', { recursive: true });
@@ -131,17 +132,17 @@ try {
   const otherTab = await context.newPage(); await otherTab.goto(cfg.origin); await otherTab.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   await page.getByLabel('New budget note').fill('First tab note'); await page.getByRole('button', { name: 'Add note', exact: true }).click(); await saved();
   await otherTab.getByLabel('New budget note').fill('Stale tab note'); await otherTab.getByRole('button', { name: 'Add note', exact: true }).click(); await otherTab.getByRole('alert').filter({ hasText: 'changed in another tab' }).waitFor();
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
   await otherTab.getByRole('heading', { name: 'Welcome back.' }).waitFor(); assert.equal(await otherTab.locator('.balance-value').count(), 0); await otherTab.close();
   await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await credentials('bob'); await page.getByLabel('Profile name').fill('Bob Example'); await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹0'); assert.equal(await page.getByText('Dummy lunch', { exact: true }).count(), 0);
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
   await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
   assert.equal(await page.getByText('Money from Alex', { exact: true }).count(), 1);
   assert.equal(await page.getByText('First tab note', { exact: true }).count(), 1); assert.equal(await page.getByText('Stale tab note', { exact: true }).count(), 0);
-  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
-  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Delete profile', exact: true }).click(); await page.getByLabel('Confirm your password').fill('dummy-browser-password'); await page.getByRole('button', { name: 'Permanently delete my profile' }).click(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
+  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await confirm(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
+  await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Delete profile', exact: true }).click(); await page.getByLabel('Confirm your password').fill('dummy-browser-password'); await page.getByRole('button', { name: 'Permanently delete my profile' }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
   assert.equal([...store.profiles.values()].some(p => p.username === 'alice'), false);
   const nativeContext = await browser.newContext({ viewport: { width: 380, height: 850 } });
   await nativeContext.addInitScript(nativeBridge, cfg.origin);
@@ -183,7 +184,9 @@ try {
   await nativePage.getByTitle('Add Borrowed Entry').click();
   await nativePage.getByLabel("Friend's name", { exact: true }).fill('Test lender');
   await nativePage.getByLabel('Loan amount', { exact: true }).fill('2000');
-  await nativePage.getByLabel('Expected return date', { exact: true }).fill('2025-01-01');
+  await nativePage.getByRole('combobox', { name: /^Expected return date/ }).click(); await nativePage.getByRole('button', { name: 'Choose month and year' }).click();
+  while (await nativePage.locator('.calendar-title').textContent() !== '2025') await nativePage.getByRole('button', { name: 'Show previous year' }).click();
+  await nativePage.getByRole('button', { name: 'January 2025' }).click(); await nativePage.getByRole('button', { name: '1 January 2025', exact: true }).click();
   await scan('borrowed loan form in light mode', nativePage);
   await nativePage.getByRole('button', { name: 'Save to Udhaar Tracker' }).click();
   await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();
@@ -233,6 +236,7 @@ try {
   await nativePage.getByRole('alert').filter({ hasText: 'Native save unavailable.' }).waitFor();
   await back();
   assert.equal(await nativePage.evaluate(() => window.nativeTest.minimized), 0, 'Back must not hide unsaved records.');
+  await confirm(nativePage);
   await nativeContext.unroute('**/api/index?action=save');
   await nativePage.getByRole('button', { name: 'Retry saving' }).click();
   await nativePage.getByRole('status').filter({ hasText: 'Saved to your profile' }).waitFor();

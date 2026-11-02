@@ -3,6 +3,8 @@ import { X, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Transaction, TransactionType, PaymentMode } from '../../types/finance';
 import { localDate } from '../../utils/dates';
 import { CategoryCombobox } from '../CategoryCombobox';
+import { DatePicker } from '../DatePicker';
+import { Select } from '../Select';
 
 interface Props {
   isOpen: boolean; onClose: () => void; onSave: (data: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -31,7 +33,7 @@ export function TransactionModal({ onClose, onSave, currencySymbol, initialType 
       <div className="quick-amounts">{[50, 100, 200, 500].map(value => <button type="button" key={value} onClick={() => setAmount(String(value))}>{currencySymbol}{value}</button>)}</div>
       <CategoryCombobox label="Category" categories={categories} value={category} onChange={setCategory} placeholder="Choose or create a category"/>
       <label className="field">Note <span className="muted">(optional)</span><textarea rows={2} maxLength={500} value={note} onChange={e => setNote(e.target.value)} placeholder={type === 'income' ? 'Who gave you the money? What was it for?' : 'What was this for?'}/></label>
-      <div className="form-grid"><label className="field">Date<input required type="date" max={localDate()} value={date} onChange={e => setDate(e.target.value)}/></label><label className="field">Payment method<select value={paymentMode} onChange={e => setPaymentMode(e.target.value as PaymentMode)}>{['UPI (GPay/PhonePe)', 'Cash', 'Bank Transfer', 'Card'].map(mode => <option key={mode}>{mode}</option>)}</select></label></div>
+      <div className="form-grid"><div className="field"><span aria-hidden="true">Date</span><DatePicker label="Date" max={localDate()} value={date} onChange={setDate}/></div><div className="field"><span aria-hidden="true">Payment method</span><Select label="Payment method" value={paymentMode} onChange={mode => setPaymentMode(mode as PaymentMode)} options={['UPI (GPay/PhonePe)', 'Cash', 'Bank Transfer', 'Card']}/></div></div>
       {error && <p role="alert" className="error-text">{error}</p>}
       <button className="primary-button full-width" type="submit">{type === 'income' ? 'Save money received' : 'Save expense'}</button>
       <p className="form-hint">Money received automatically increases the budget for the month of this entry.</p>

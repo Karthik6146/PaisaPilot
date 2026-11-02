@@ -444,3 +444,65 @@ button { transition: background .15s, color .15s, border-color .15s, box-shadow 
 :is(.sidebar, .workspace-header, .panel, .summary-strip, .personal-dialog, .month-picker) { transition: background-color .25s, border-color .25s, color .25s; }
 .field :is(input, select, textarea) { transition: border-color .15s, box-shadow .15s, background-color .25s; }
 .field :is(input, select, textarea):focus { border-color: #75a18b; box-shadow: 0 0 0 3px #75a18b26; }
+
+/* Themed select, date picker and confirm dialog (replace native popups). */
+.popover { position: fixed; z-index: 60; }
+.select, .date-picker, .form-grid > .field { min-width: 0; }
+.picker-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; font: inherit; }
+.picker-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-icon { flex-shrink: 0; color: #85907e; transition: rotate .2s var(--ease-out); }
+.select .picker-trigger[aria-expanded="true"] .picker-icon { rotate: 180deg; }
+:is(.field, .history-controls, .loan-date) .picker-trigger { border: 1px solid #dfe5d5; border-radius: 7px; background: #fdfef9; padding: 11px 12px; font-size: 12px; font-weight: 400; color: #334a33; transition: border-color .15s, box-shadow .15s, background-color .25s; }
+.field .picker-trigger { margin-top: 7px; }
+:is(.field, .history-controls, .loan-date) .picker-trigger:hover { border-color: #c7d3b8; }
+:is(.field, .history-controls, .loan-date) .picker-trigger[aria-expanded="true"] { border-color: #75a18b; box-shadow: 0 0 0 3px #75a18b26; }
+.loan-date .picker-trigger { border-radius: 12px; padding: 9px 12px; }
+.history-controls .select { min-width: 160px; }
+.history-controls .picker-trigger { height: 100%; }
+.month-picker .date-picker { width: 132px; }
+.month-picker .picker-trigger { justify-content: center; border: 0; background: transparent; padding: 5px 4px; font-size: 11px; color: #57644f; border-radius: 6px; }
+.month-picker .picker-trigger:hover { background: #eef2e6; }
+.month-picker .picker-icon { opacity: .6; }
+.calendar { background: #fffefa; border: 1px solid #dfe5d5; border-radius: 14px; box-shadow: 0 16px 40px #243d2a2e; padding: 14px; color: #30482f; animation: pop-in .16s var(--ease-out); }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.calendar-header > div { display: flex; }
+.calendar-title { border: 0; background: transparent; font-size: 14px; font-weight: 700; color: inherit; padding: 6px 8px; border-radius: 7px; letter-spacing: -.2px; }
+button.calendar-title:hover { background: #eef2e6; }
+.calendar-title.static { padding-left: 8px; }
+.calendar-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.calendar-weekday { text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .4px; color: #7a8a72; padding: 4px 0 6px; }
+.calendar-day { width: 100%; aspect-ratio: 1; border: 0; border-radius: 9px; background: transparent; font-size: 12px; font-weight: 500; color: inherit; font-variant-numeric: tabular-nums; }
+.calendar-day:hover:not(:disabled), .calendar-month:hover:not(:disabled) { background: #eef2e6; }
+.calendar-day.today { box-shadow: inset 0 0 0 1px #9cb791; color: #2b573e; font-weight: 700; }
+.calendar-day.selected, .calendar-month.selected { background: #2c6249; color: #fff; box-shadow: none; }
+.calendar-day.selected:hover, .calendar-month.selected:hover { background: #224e39; }
+.calendar-day:disabled, .calendar-month:disabled { opacity: .3; }
+.calendar-months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.calendar-month { border: 0; border-radius: 9px; background: transparent; padding: 14px 0; font-size: 12px; font-weight: 600; color: inherit; }
+.calendar-footer { display: flex; justify-content: flex-end; border-top: 1px solid #edf0e5; margin-top: 10px; padding-top: 8px; }
+.calendar-footer .text-button { font-size: 12px; padding: 6px 8px; border-radius: 7px; }
+.calendar-footer .text-button:hover:not(:disabled) { background: #eef2e6; }
+.confirm-dialog { max-width: 400px; }
+.confirm-dialog h2 { font-size: 19px; font-weight: 700; margin: 0 0 10px; letter-spacing: -.5px; }
+.confirm-dialog p { font-size: 13px; line-height: 1.7; color: #556650; margin: 0 0 22px; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.danger-button.solid { background: #b4473a; border-color: #b4473a; color: #fff; }
+.danger-button.solid:hover { background: #973a2f; }
+[data-theme="dark"] :is(.field, .history-controls, .loan-date) .picker-trigger { background: #131e16; border-color: var(--dark-border); color: #e3eee4; }
+[data-theme="dark"] .month-picker .picker-trigger { color: #e3eee4; }
+[data-theme="dark"] :is(.month-picker .picker-trigger:hover, button.calendar-title:hover, .calendar-day:hover:not(:disabled), .calendar-month:hover:not(:disabled), .calendar-footer .text-button:hover:not(:disabled)) { background: #2b3c2d; }
+[data-theme="dark"] .picker-icon { color: var(--dark-muted); }
+[data-theme="dark"] .calendar { background: var(--dark-panel); border-color: var(--dark-border); color: #e3eee4; box-shadow: 0 16px 40px #00000080; }
+[data-theme="dark"] .calendar-weekday, [data-theme="dark"] .confirm-dialog p { color: var(--dark-muted); }
+[data-theme="dark"] .calendar-day.today { box-shadow: inset 0 0 0 1px #5d7a55; color: var(--dark-accent); }
+[data-theme="dark"] :is(.calendar-day.selected, .calendar-month.selected) { background: #8fc58d; color: #10200f; }
+[data-theme="dark"] .calendar-footer { border-color: var(--dark-border); }
+[data-theme="dark"] .danger-button.solid { background: #c4574a; border-color: #c4574a; color: #fff; }
+@media (max-width: 640px) {
+  :is(.field, .history-controls, .loan-date) .picker-trigger { font-size: 16px; min-height: 48px; }
+  .history-controls .select { flex: 1; min-width: 0; }
+  .month-picker .date-picker { width: auto; flex: 1; }
+  .month-picker .picker-trigger { font-size: 16px; }
+  .calendar-day { font-size: 14px; }
+  .confirm-actions > button { flex: 1; min-height: 48px; }
+}

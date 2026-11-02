@@ -3,6 +3,7 @@ import { X, DollarSign } from 'lucide-react';
 import { LoanItem } from '../../types/finance';
 import { localDate } from '../../utils/dates';
 import { sound } from '../../utils/sound';
+import { DatePicker } from '../DatePicker';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -110,14 +111,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
           <div>
             <label className="text-xs text-slate-400 font-medium block mb-1">Date</label>
-            <input
-              type="date"
-              aria-label="Repayment date"
-              required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-indigo-500"
-            />
+            <DatePicker label="Repayment date" max={localDate()} value={date} onChange={setDate} className="loan-date"/>
           </div>
 
           <div>

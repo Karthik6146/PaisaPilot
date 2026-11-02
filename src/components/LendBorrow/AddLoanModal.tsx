@@ -3,6 +3,7 @@ import { X, Users, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { LoanType } from '../../types/finance';
 import { localDate } from '../../utils/dates';
 import { sound } from '../../utils/sound';
+import { DatePicker } from '../DatePicker';
 
 interface AddLoanModalProps {
   isOpen: boolean;
@@ -176,25 +177,11 @@ export const AddLoanModal: React.FC<AddLoanModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1">Date Given / Taken</label>
-              <input
-                type="date"
-                aria-label="Date given or taken"
-                required
-                value={dateTaken}
-                onChange={(e) => setDateTaken(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-purple-500"
-              />
+              <DatePicker label="Date given or taken" max={localDate()} value={dateTaken} onChange={setDateTaken} className="loan-date"/>
             </div>
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1">Expected Return Due Date</label>
-              <input
-                type="date"
-                aria-label="Expected return date"
-                required
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-purple-500"
-              />
+              <DatePicker label="Expected return date" value={dueDate} onChange={setDueDate} className="loan-date"/>
             </div>
           </div>
 

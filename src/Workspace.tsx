@@ -6,6 +6,7 @@ import { parseSnapshot, type Snapshot } from '../shared/finance.mjs';
 import { Capacitor } from '@capacitor/core';
 import { App as NativeApp } from '@capacitor/app';
 import { clearExpiredExports } from './utils/exportFile';
+import { confirmAction } from './components/ConfirmDialog';
 
 interface Session { profile: { id: string; username: string }; data: Snapshot; revision: number; csrf: string; }
 export default function Workspace() {
@@ -90,7 +91,7 @@ export default function Workspace() {
   }, []);
   const logout = async () => {
     if (leaving.current) return;
-    if (!window.confirm('Sign out on this device? Other open tabs will lock and discard unsaved changes. Export a backup there first.')) return;
+    if (!await confirmAction('Sign out on this device? Other open tabs will lock and discard unsaved changes. Export a backup there first.', { title: 'Sign out?', confirmLabel: 'Sign out' })) return;
     leaving.current = true;
     try { await flush(); await request('logout', 'POST', undefined, auth.current?.csrf); auth.current = null; setSession(null); setError(''); channel.current?.postMessage('changed'); }
     catch (error) { setError(error instanceof Error ? error.message : 'Sign-out failed.'); }
