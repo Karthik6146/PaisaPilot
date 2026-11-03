@@ -368,7 +368,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
       {saveError && <div className="inline-warning" role="alert"><span>{saveError} Export a backup from Settings before closing.</span><button className="secondary-button" onClick={onRetry}>Retry saving</button></div>}
         {/* Alerts Center Drawer / Banner */}
         {isAlertsDrawerOpen && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in mb-6">
             <AlertCenter
               alerts={activeAlerts}
               onDismiss={handleDismissAlert}

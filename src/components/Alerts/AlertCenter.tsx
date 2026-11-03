@@ -25,8 +25,8 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
   }
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between px-1">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-purple-400" />
           <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
@@ -35,7 +35,7 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {alerts.map((item) => {
           let borderClass = 'border-slate-800';
           let bgClass = 'bg-slate-900/80';
@@ -58,13 +58,13 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
           return (
             <div
               key={item.id}
-              className={`border ${borderClass} ${bgClass} rounded-2xl p-3.5 flex items-start justify-between gap-3 backdrop-blur-md transition-all`}
+              className={`border ${borderClass} ${bgClass} rounded-2xl p-4 sm:px-5 flex items-start justify-between gap-4 backdrop-blur-md transition-all`}
             >
-              <div className="flex items-start gap-3">
-                {icon}
-                <div>
-                  <h5 className="font-semibold text-slate-100 text-xs sm:text-sm">{item.title}</h5>
-                  <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{item.message}</p>
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <span className="mt-px">{icon}</span>
+                <div className="min-w-0">
+                  <h5 className="font-semibold text-slate-100 text-sm leading-5">{item.title}</h5>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.message}</p>
 
                   {item.actionLabel && (
                     <button
@@ -78,7 +78,7 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
                           onNavigateToTab('budget');
                         }
                       }}
-                      className="mt-2 text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+                      className="mt-3 text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
                     >
                       <span>{item.actionLabel}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -92,7 +92,8 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
                   sound.click();
                   onDismiss(item.id);
                 }}
-                className="text-slate-500 hover:text-slate-300 p-1 rounded-lg transition-colors shrink-0"
+                aria-label={`Dismiss ${item.title}`}
+                className="text-slate-500 hover:text-slate-300 p-1.5 -mt-1 -mr-1.5 rounded-lg transition-colors shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
