@@ -23,6 +23,7 @@ import {
   ExpenseCategory,
   IncomeCategory,
   PrioritySpend,
+  Autopay,
 } from './types/finance';
 import { emptySnapshot, parseBackup, exportBackup } from './utils/storage';
 import { validMoney, validDate, type Snapshot } from '../shared/finance.mjs';
@@ -126,8 +127,18 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
   }, [transactions, loans, selectedBudget, referenceDate, reserved]);
 
   const rawAlerts = useMemo(() => {
-    return selectedMonth === calendarDate.slice(0, 7) && stats.monthlyTarget > 0 ? generateAlerts(stats, loans) : [];
-  }, [stats, loans, selectedMonth, calendarDate]);
+    return selectedMonth === calendarDate.slice(0, 7) && stats.monthlyTarget > 0 ? generateAlerts(stats, loans, budget.autopays, calendarDate) : [];
+  }, [stats, loans, budget.autopays, selectedMonth, calendarDate]);
+
+  // Record each active autopay once per month, on or after its day. Past months are never back-filled.
+  useEffect(() => {
+    const month = calendarDate.slice(0, 7), today = Number(calendarDate.slice(8));
+    const due = (budget.autopays || []).filter(a => a.active && a.lastPaidMonth !== month && a.day <= today);
+    if (due.length === 0) return;
+    const created = due.map(a => ({ id: crypto.randomUUID(), type: 'expense' as const, amount: a.amount, category: 'Autopay', note: a.title + (a.note ? ' - ' + a.note : ''), date: month + '-' + String(a.day).padStart(2, '0'), paymentMode: a.paymentMode, createdAt: Date.now() }));
+    setTransactions(prev => [...created, ...prev]);
+    setBudget(prev => ({ ...prev, autopays: (prev.autopays || []).map(a => due.some(d => d.id === a.id) ? { ...a, lastPaidMonth: month } : a) }));
+  }, [budget.autopays, calendarDate]);
 
   const activeAlerts = useMemo(() => {
     return rawAlerts.filter((a) => !dismissedAlerts.includes(a.id));
@@ -445,6 +456,9 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
             receivedIncome={stats.totalIncome}
             onSaveBudget={saveMonthBudget}
             currencySymbol={settings.currencySymbol}
+            autopays={budget.autopays || []}
+            onAutopaysChange={(autopays: Autopay[]) => setBudget(prev => ({ ...prev, autopays }))}
+            today={calendarDate}
           />
         )}
         </div>
@@ -464,6 +478,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
         initialNote={txModalDefaults.note}
         initialCategory={txModalDefaults.category}
         categories={[...new Set([...Object.keys(selectedBudget.categories), ...transactions.filter(t => t.type === txModalDefaults.type).map(t => t.category)])]}
+        subBudgets={Object.keys(selectedBudget.categories).filter(c => selectedBudget.categories[c] > 0)}
       />}
 
       {isAddLoanModalOpen && <AddLoanModal

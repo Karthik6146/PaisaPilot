@@ -37,6 +37,8 @@ plan the month, log each day, and always know what you can still spend today.
 | 🎯 **Daily allowance** | Your remaining budget, minus planned purchases, split across the days left in the month. |
 | 🗂️ **Your own categories** | No preset fees or fixed ratios. Add whatever fits your life. |
 | 📌 **Priorities that reserve money** | Plan an exam fee or a gadget; its money is set aside until you mark it paid. |
+| 🧩 **Sub-budgets** | Give a category a limit and watch it on the dashboard: spent, left, and what that leaves per day. Any expense can be debited from a sub-budget. |
+| 🔁 **Autopays** | Add Spotify, a SIP or rent once; the expense is recorded every month on its day, with a reminder two days before. |
 | 🤝 **Udhaar tracker** | Remember who owes you and whom you owe, with partial repayments and WhatsApp reminders. |
 | 🔒 **Private by design** | Invite-only access, hashed passwords, per-profile data and no third-party trackers. |
 | 📱 **Web + Android** | One account, same records, on the website and the Android app. |
@@ -50,7 +52,7 @@ plan the month, log each day, and always know what you can still spend today.
 <td width="50%">
 
 #### 📊 Dashboard
-Money left, spent today, daily allowance, reserved priorities, a daily spending chart, category breakdown, notes and recent activity — for any month you pick.
+Money left, spent today, daily allowance, sub-budgets, an interactive daily chart (tap a day to see its expenses), category breakdown, notes and recent activity — for any month you pick.
 
 </td>
 <td width="50%">
@@ -68,7 +70,7 @@ Every expense and receipt in one ledger. Search, filter by type or category, and
 <td>
 
 #### 🧮 Monthly budget
-Set starting pocket money and optional limits per category. Money you receive later is added automatically.
+Set starting pocket money and optional limits per category — each limit becomes a sub-budget. Add monthly autopays here; they are recorded on their day and shown in history.
 
 </td>
 <td>
@@ -126,6 +128,8 @@ Daily allowance  = max(0, remaining monthly budget − unpaid priorities) ÷ day
 - Enter your **starting** pocket money only in the budget. Record later money as **Add money received**.
 - Removing a receipt reduces available funds automatically.
 - Marking a priority **paid** creates its expense and releases the reservation.
+- A category **limit** is a sub-budget. Its spend counts in the main budget too; an expense can be debited from a sub-budget other than its own category.
+- An **autopay** is recorded once per month on its day (1–28) the next time the app is open. Delete the expense from history if the payment did not go through.
 - Budgets, priorities and notes belong to the month you select.
 - Loans are tracked separately and do not change your budget.
 

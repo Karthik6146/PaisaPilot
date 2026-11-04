@@ -15,6 +15,7 @@ export interface Transaction {
   date: string; // ISO date YYYY-MM-DD
   time?: string;
   paymentMode: PaymentMode;
+  subBudget?: string; // limited category this expense counts against instead of its own category
   tags?: string[];
   createdAt: number;
 }
@@ -51,6 +52,7 @@ export interface BudgetConfig {
   months?: Record<string, { monthlyTarget: number; categories: Record<string, number> }>;
   priorities?: PrioritySpend[];
   notes?: BudgetNote[];
+  autopays?: Autopay[];
 }
 
 export interface PrioritySpend {
@@ -61,6 +63,17 @@ export interface PrioritySpend {
   category: string;
   priority: 'Must have' | 'Important' | 'Can wait';
   paidTransactionId?: string;
+}
+
+export interface Autopay {
+  id: string;
+  title: string;
+  amount: number;
+  paymentMode: PaymentMode;
+  note: string;
+  day: number; // day of month, 1-28
+  active: boolean;
+  lastPaidMonth?: string; // YYYY-MM of the last auto-created expense
 }
 
 export interface BudgetNote {

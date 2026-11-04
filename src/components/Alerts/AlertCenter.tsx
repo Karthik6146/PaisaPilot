@@ -70,7 +70,9 @@ export const AlertCenter: React.FC<AlertCenterProps> = ({
                     <button
                       onClick={() => {
                         sound.click();
-                        if (item.actionLabel?.includes('WhatsApp') || item.actionLabel?.includes('Pay')) {
+                        if (item.actionLabel?.includes('history')) {
+                          onNavigateToTab('transactions');
+                        } else if (item.actionLabel?.includes('WhatsApp') || item.actionLabel?.includes('Pay')) {
                           onNavigateToTab('udhaar');
                         } else if (item.actionLabel?.includes('AI')) {
                           onNavigateToTab('ai');

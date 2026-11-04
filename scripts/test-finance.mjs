@@ -126,6 +126,25 @@ test('monthly notes and priorities remain isolated and round-trip', () => {
   data.budget.notes = [{ id: 'n1', month: '2026-10', text: 'Remember appointment', pinned: true }];
   assert.deepEqual(parseBackup(exportBackup(data)), data);
 });
+test('expenses may name a sub-budget and reject prototype names', () => {
+  const data = emptySnapshot('Example');
+  data.transactions = [{ ...tx(100), subBudget: 'Rent' }];
+  assert.equal(parseBackup(exportBackup(data)).transactions[0].subBudget, 'Rent');
+  data.transactions = [{ ...tx(100), subBudget: '__proto__' }];
+  assert.throws(() => parseSnapshot(data));
+});
+test('autopays round-trip, reject bad days, and alert when due or debited', () => {
+  const data = emptySnapshot('Example');
+  data.budget.autopays = [{ id: 'a1', title: 'Spotify', amount: 119, paymentMode: 'Card', note: 'Premium', day: 10, active: true, lastPaidMonth: '2026-09' }];
+  assert.deepEqual(parseBackup(exportBackup(data)), data);
+  for (const bad of [{ ...data.budget.autopays[0], day: 29 }, { ...data.budget.autopays[0], day: 1.5 }, { ...data.budget.autopays[0], lastPaidMonth: '2026-13' }, { ...data.budget.autopays[0], amount: 0 }, { ...data.budget.autopays[0], paymentMode: '' }]) { const copy = emptySnapshot(); copy.budget.autopays = [bad]; assert.throws(() => parseSnapshot(copy)); }
+  const stats = calculateStats([], [], budget, now);
+  const due = generateAlerts(stats, [], [{ id: 'a1', title: 'Spotify', amount: 119, paymentMode: 'Card', note: '', day: 10, active: true }], '2026-10-09');
+  assert.equal(due.find(a => a.id === 'alert-autopay-due-a1')?.title, 'Autopay in 1 day: Spotify');
+  const paid = generateAlerts(stats, [], [{ id: 'a1', title: 'Spotify', amount: 119, paymentMode: 'Card', note: '', day: 9, active: true, lastPaidMonth: '2026-10' }], '2026-10-09');
+  assert.equal(paid.find(a => a.id === 'alert-autopay-paid-a1')?.actionLabel, 'View history');
+  assert.equal(generateAlerts(stats, [], [{ id: 'a1', title: 'Spotify', amount: 119, paymentMode: 'Card', note: '', day: 9, active: false }], '2026-10-09').some(a => a.id.startsWith('alert-autopay')), false);
+});
 test('old browser deletion removes every live and recovery copy and reports failures', () => {
   const keys = ['transactions', 'loans', 'budget', 'settings'].flatMap(type => ['pocketguard_' + type + '_v1', 'pocketguard_' + type + '_v1_recovery']);
   for (const key of keys) memory.set(key, 'dummy');

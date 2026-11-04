@@ -48,7 +48,11 @@ const demo = {
       { id: 'pr1', month, title: 'Semester exam fee', amount: 800, category: 'Books', priority: 'Must have' },
       { id: 'pr2', month, title: 'New earphones', amount: 650, category: 'Entertainment', priority: 'Can wait' },
     ],
-    notes: [{ id: 'n1', month, text: 'Skip food delivery this week — cook with roommates.', pinned: true }],
+    notes: [{ id: 'n1', month, text: 'Skip food delivery this week — cook with roommates.', pinned: true }, { id: 'n2', month, text: 'Return library books before the 30th.', pinned: false }],
+    autopays: [
+      { id: 'a1', title: 'Spotify', amount: 119, paymentMode: 'Card', note: 'Premium', day: 5, active: true },
+      { id: 'a2', title: 'Mutual fund SIP', amount: 500, paymentMode: 'Bank Transfer', note: '', day: 10, active: true },
+    ],
   },
   settings: { theme: 'light', currency: 'INR', currencySymbol: '₹', userName: 'Aarav Demo', monthlyAllowance: 0, soundEnabled: false },
 };

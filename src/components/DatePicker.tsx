@@ -25,7 +25,7 @@ export function DatePicker({ label, value, onChange, min, max, mode = 'date', cl
   const trigger = useRef<HTMLButtonElement>(null);
   const popup = useRef<HTMLDivElement>(null);
   const close = useCallback(() => setOpen(false), []);
-  const style = usePopover(open, close, trigger, popup, 296);
+  const style = usePopover(open, close, trigger, popup, 272);
   const y = cursor.getFullYear(), m = cursor.getMonth();
   const daysIn = new Date(y, m + 1, 0).getDate();
   const allowed = (date: string) => !(min && date < min) && !(max && date > max);
@@ -80,10 +80,11 @@ export function DatePicker({ label, value, onChange, min, max, mode = 'date', cl
         <div className="calendar-months">{Array.from({ length: 12 }, (_, mm) => {
           const selected = value && toDate(value).getFullYear() === y && toDate(value).getMonth() === mm;
           return <button type="button" key={mm} data-month={mm} tabIndex={mm === m ? 0 : -1} disabled={!monthAllowed(mm)} aria-label={`${monthName(mm, 'long')} ${y}`} aria-pressed={!!selected}
-            className={'calendar-month' + (selected ? ' selected' : '')}
+            className={'calendar-month' + (selected ? ' selected' : '') + (`${y}-${pad(mm + 1)}` === today.slice(0, 7) ? ' today' : '')}
             onKeyDown={e => { const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -3, ArrowDown: 3 }[e.key]; if (step) { e.preventDefault(); move(new Date(y, m + step, 1)); } }}
             onClick={() => { if (month) finish(`${y}-${pad(mm + 1)}`); else { move(new Date(y, mm, Math.min(cursor.getDate(), new Date(y, mm + 1, 0).getDate()))); setView('days'); } }}>{monthName(mm, 'short')}</button>;
         })}</div>
+        {month && <div className="calendar-footer"><button type="button" className="text-button" disabled={!allowed(today.slice(0, 7))} onClick={() => finish(today.slice(0, 7))}>This month</button></div>}
       </>}
     </div>}
   </div>;

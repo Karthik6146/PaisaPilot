@@ -1,4 +1,4 @@
-import { AlertItem, BudgetConfig, LoanItem, Transaction } from '../types/finance';
+import { AlertItem, Autopay, BudgetConfig, LoanItem, Transaction } from '../types/finance';
 import { localDate } from './dates';
 
 export interface FinancialStats {
@@ -133,10 +133,11 @@ export const calculateStats = (
 
 export const generateAlerts = (
   stats: FinancialStats,
-  loans: LoanItem[]
+  loans: LoanItem[],
+  autopays: Autopay[] = [],
+  todayStr = localDate()
 ): AlertItem[] => {
   const alerts: AlertItem[] = [];
-  const todayStr = localDate();
 
   // 1. Runway danger alert
   if (stats.runwayStatus === 'danger') {
@@ -228,6 +229,14 @@ export const generateAlerts = (
       date: todayStr,
     });
   }
+
+  // 5b. Autopays due soon or debited today
+  const thisMonth = todayStr.slice(0, 7), todayDay = Number(todayStr.slice(8));
+  autopays.filter(a => a.active).forEach(a => {
+    const paid = a.lastPaidMonth === thisMonth;
+    if (paid && a.day === todayDay) alerts.push({ id: `alert-autopay-paid-${a.id}`, type: 'info', title: `Autopay debited: ${a.title}`, message: `₹${a.amount} for ${a.title} was recorded today via ${a.paymentMode}. Delete it from history if it did not go through.`, actionLabel: 'View history', date: todayStr });
+    else if (!paid && a.day - todayDay >= 0 && a.day - todayDay <= 2) alerts.push({ id: `alert-autopay-due-${a.id}`, type: 'warning', title: `Autopay ${a.day === todayDay ? 'today' : 'in ' + (a.day - todayDay) + (a.day - todayDay === 1 ? ' day' : ' days')}: ${a.title}`, message: `₹${a.amount} for ${a.title} will be debited on the ${a.day}. Keep the balance ready.`, date: todayStr });
+  });
 
   // 6. Positive encouragement if on track
   if (alerts.length === 0 && stats.currentBalance > 1000) {
