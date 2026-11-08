@@ -33,7 +33,7 @@ export function BudgetPlanner({ receivedIncome, budget, transactions, onSaveBudg
       if (!Number.isFinite(value) || value < 0 || total > Math.round((value + receivedIncome) * 100) / 100) { setError('Category allocations must fit within your monthly budget.'); return; }
       onSaveBudget({ ...budget, monthlyTarget: value, categories }); setError(''); setSaved(true);
     }}>
-      <div className="section-heading"><div><span className="eyebrow">MONTHLY PLAN</span><h2>Set your budget</h2></div></div>
+      <div className="section-heading"><div><span className="eyebrow">Monthly plan</span><h2>Set your budget</h2></div></div>
       <label className="field">Monthly pocket money ({currencySymbol})<input required type="number" min="0" max="1000000000" step="0.01" inputMode="decimal" value={target} onChange={e => { setTarget(e.target.value); setSaved(false); }} placeholder="e.g. 5000" className="amount-input"/></label>
       <p className="form-hint">Enter your starting pocket money only. Additional money received is counted separately.</p>
       <div className="allocation-summary"><span>Money received <strong>{currencySymbol}{receivedIncome.toLocaleString('en-IN')}</strong></span><span>Total monthly budget <strong>{currencySymbol}{funding.toLocaleString('en-IN')}</strong></span></div>

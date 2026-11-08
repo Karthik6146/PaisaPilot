@@ -19,7 +19,7 @@ export function Navbar(props: NavbarProps) {
   ];
   return <aside className="sidebar">
     <a className="brand" href="#main"><span className="brand-icon"><Wallet size={23}/></span><span>PaisaPilot<small>Your money, your pace.</small></span></a>
-    <div className="nav-caption">YOUR WORKSPACE</div>
+    <div className="nav-caption">Workspace</div>
     <div className="mobile-toolbar"><button className="icon-button" onClick={props.onToggleTheme} aria-label={props.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>{props.theme === 'dark' ? <Sun size={20}/> : <Moon size={20}/>}</button><button className="icon-button mobile-menu-toggle" aria-label="Workspace options" aria-controls="workspace-options" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><MoreHorizontal size={22}/></button></div>
     <nav aria-label="Main navigation">{tabs.map(({ id, label, short, icon: Icon }) =>
       <button key={id} aria-label={label} onClick={() => { props.setActiveTab(id); setMenuOpen(false); window.scrollTo({ top: 0 }); }} className={props.activeTab === id ? 'nav-item active' : 'nav-item'} aria-current={props.activeTab === id ? 'page' : undefined}><Icon size={21}/><span className="desktop-nav-label">{label}</span><span className="mobile-nav-label" aria-hidden="true">{short}</span></button>)}</nav>

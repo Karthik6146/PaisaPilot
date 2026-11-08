@@ -14,7 +14,7 @@ export function PrioritySpending({ items, month, currencySymbol, categories, onC
   const monthItems = items.filter(item => item.month === month).sort((a, b) => Number(!!a.paidTransactionId) - Number(!!b.paidTransactionId) || ['Must have', 'Important', 'Can wait'].indexOf(a.priority) - ['Must have', 'Important', 'Can wait'].indexOf(b.priority));
   const reserved = monthItems.filter(item => !item.paidTransactionId).reduce((sum, item) => sum + item.amount, 0);
   return <section className="panel priority-panel">
-    <div className="section-heading"><div><h2><Flag size={18}/>Priority spending</h2><p>Make room for what matters.</p></div><button className="icon-button" aria-label={adding ? 'Close priority form' : 'Add priority purchase'} onClick={() => setAdding(!adding)}>{adding ? <X size={18}/> : <Plus size={18}/>}</button></div>
+    <div className="section-heading"><div><h2><Flag size={18}/>Priority spending</h2></div><button className="icon-button" aria-label={adding ? 'Close priority form' : 'Add priority purchase'} onClick={() => setAdding(!adding)}>{adding ? <X size={18}/> : <Plus size={18}/>}</button></div>
     {adding && <form className="widget-form" onSubmit={e => {
       e.preventDefault(); const form = new FormData(e.currentTarget);
       const title = String(form.get('title')).trim(), amount = Number(form.get('amount')), category = String(form.get('category')).trim();

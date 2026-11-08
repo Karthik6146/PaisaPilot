@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800; font-display: swap; src: url('/fonts/PlusJakartaSans.woff2') format('woff2'); }
+@font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/InstrumentSerif.woff2') format('woff2'); }
+
 :root { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #25372f; background: #f7f8f4; font-synthesis: none; }
 .access-page { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
 .access-story { background: #eaf0e1; padding: 48px max(32px, 6vw); display: flex; flex-direction: column; justify-content: space-between; gap: 64px; }
@@ -622,6 +625,96 @@ input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-o
 [data-theme="dark"] .note-card.pinned::before { background: var(--dark-accent); }
 [data-theme="dark"] .note-card p { color: #e3eee4; }
 [data-theme="dark"] .note-pinned { color: var(--dark-accent); }
+
+/* Unslop pass: 4px grid, sentence-case labels, flat balance card, one accent, calmer motion. */
+.sidebar { padding: 24px 16px 20px; }
+.brand { font-weight: 600; letter-spacing: -.3px; padding: 0 8px; gap: 12px; }
+.brand-icon { width: 40px; height: 40px; border-radius: 12px; }
+.brand small { margin-top: 2px; }
+.nav-caption { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; margin: 32px 0 8px; padding: 0 12px; }
+.sidebar nav { gap: 4px; }
+.nav-item { padding: 8px 12px; min-height: 36px; gap: 10px; font-size: 13px; }
+.nav-item svg { width: 18px; height: 18px; }
+.sidebar-bottom .nav-item { padding-block: 8px; font-size: 13px; }
+.count { font-size: 11px; padding: 2px 6px; }
+.local-label { margin: 16px 12px 0; padding-top: 16px; font-size: 11px; }
+.workspace-header { height: 64px; padding: 0 32px; }
+.workspace-main { padding: 24px 32px 32px; }
+.page-heading { margin-bottom: 24px; gap: 24px; }
+.page-heading h1 { font-size: 28px; font-weight: 600; letter-spacing: -.4px; margin: 0 0 4px; }
+.page-heading p { font-size: 13px; }
+.page-actions, .button-group { gap: 8px; }
+.eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.primary-button, .secondary-button, .danger-button { padding: 10px 16px; min-height: 40px; gap: 8px; }
+.panel, .summary-strip { padding: 24px; border-radius: 16px; }
+.panel h2 { font-size: 15px; font-weight: 600; gap: 8px; }
+.panel h2 svg { width: 18px; height: 18px; }
+.section-heading { margin-bottom: 20px; gap: 12px; }
+.section-heading p { margin-top: 4px; }
+.soft-icon { width: 36px; height: 36px; border-radius: 10px; }
+.balance-card { background: #2b5a42; border-radius: 16px; padding: 24px 28px 0; box-shadow: 0 1px 2px #0000001a; }
+.balance-art { display: none; }
+.balance-top > span:first-child { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; gap: 8px; }
+.balance-label { margin: 28px 0 4px; }
+.balance-value { font-weight: 600; letter-spacing: -1px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.balance-copy { margin: 8px 0 0; }
+.balance-card { display: flex; flex-direction: column; }
+.balance-progress { margin-top: auto; height: 4px; }
+.balance-value { margin-bottom: 24px; }
+.balance-progress-label { margin-top: 8px; }
+.balance-bottom { margin-top: 20px; padding: 16px 0; }
+.balance-bottom button { gap: 8px; }
+@media (hover: hover) { .balance-card:hover { box-shadow: 0 1px 2px #0000001a; } }
+.daily-card .section-heading { margin-bottom: 16px; }
+.daily-value { margin: 4px 0 12px; font-weight: 600; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.daily-divider { margin: 20px 0 16px; }
+.daily-bottom strong { font-variant-numeric: tabular-nums; }
+.round-add { width: 36px; height: 36px; border-radius: 10px; }
+.summary-strip { padding: 20px 8px; }
+.summary-strip > div { gap: 12px; padding: 0 16px; }
+.summary-strip svg { width: 18px; height: 18px; }
+.summary-strip small { margin-bottom: 4px; }
+.summary-strip strong { font-variant-numeric: tabular-nums; }
+.chart-axis { top: 76px; left: 24px; }
+.spend-chart { margin: 24px 0 0 48px; gap: 4px; }
+.chart-column { gap: 8px; }
+.chart-bar.high { background: #6f9a7c; }
+.chart-footer { margin-top: 20px; padding-top: 12px; }
+.chart-detail { margin-top: 16px; padding: 12px 16px; border-radius: 12px; animation: none; }
+.sub-budgets { gap: 16px 24px; }
+.mix-row { padding: 12px 0; animation: none; }
+.transaction-row { padding: 12px 0; gap: 12px; animation: none; }
+.transaction-icon { width: 32px; height: 32px; border-radius: 8px; }
+.priority-row { padding: 12px 0; gap: 12px; animation: none; }
+.note-card { padding: 12px 0 12px 12px; }
+.widget-footer { margin-top: 16px; padding-top: 16px; }
+.empty-small { padding: 20px 8px; }
+.empty-small h3 { margin: 12px 0 4px; }
+.doodle path, .doodle ellipse { animation: none; stroke-dasharray: none; }
+.empty-small p { animation: none; }
+.dashboard > *, .budget-layout > *, .udhaar-layout > * { animation: none; }
+.tab-view { animation: rise-in .3s var(--ease-out); }
+:is(.transaction-row, .priority-row, .note-card, .category-item) { animation: none; }
+:is(.balance-progress, .category-track) > span { animation: none; }
+.chart-bar { animation: none; }
+.spend-mix > span { animation: none; }
+.workspace-footer { padding: 0 32px 24px; font-size: 11px; }
+[data-theme="dark"] .balance-card { background: #27503b; box-shadow: none; }
+@media (max-width: 640px) { .workspace-main { padding: 20px 16px 32px; } .panel { padding: 20px; } .balance-card { padding: 20px 20px 0; } }
+
+/* Refinements: serif partner for the title and key figures, passbook rules on the balance card, off-white dark button. */
+:root { --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif; }
+.page-heading h1, .access-story h1, .access-card h2 { font-family: var(--serif); font-weight: 400; letter-spacing: 0; }
+.page-heading h1 { font-size: 34px; line-height: 1.1; }
+.balance-value, .daily-value { font-family: var(--serif); font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.balance-value { font-size: clamp(44px, 4.4vw, 60px); line-height: 1.05; margin-bottom: 20px; }
+.daily-value { font-size: 44px; line-height: 1.05; margin: 2px 0 12px; }
+.balance-card { background: #2b5a42 repeating-linear-gradient(to bottom, transparent 0 27px, #ffffff14 27px 28px) 0 92px / 100% 84px no-repeat; }
+.balance-progress { height: 3px; }
+[data-theme="dark"] .balance-card { background: #27503b repeating-linear-gradient(to bottom, transparent 0 27px, #ffffff12 27px 28px) 0 92px / 100% 84px no-repeat; }
+[data-theme="dark"] .primary-button { background: #e9eee4; border-color: #e9eee4; color: #10200f; }
+[data-theme="dark"] .primary-button:hover:not(:disabled) { background: #d9e1d3; border-color: #d9e1d3; box-shadow: none; }
+@media (max-width: 640px) { .page-heading h1 { font-size: 30px; } .balance-value { font-size: 44px; } .daily-value { font-size: 38px; } }
 
 /* Themed select, date picker and confirm dialog (replace native popups). */
 .popover { position: fixed; z-index: 60; }

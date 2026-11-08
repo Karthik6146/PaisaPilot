@@ -70,7 +70,7 @@ try {
   await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await scan('registration');
   assert.equal(await page.getByRole('alert').count(), 0, 'Registration must clear the sign-in error.');
   await credentials('alice'); await page.getByLabel('Profile name').fill('Alice Example');
-  await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹0'); await scan('new profile');
   await page.getByRole('button', { name: 'Set your monthly budget' }).click(); await page.getByLabel('Monthly pocket money').fill('5000');
   await page.getByLabel('New category name').fill('Food'); await page.getByRole('button', { name: 'Add', exact: true }).click();
@@ -115,7 +115,7 @@ try {
     await page.getByRole('dialog').waitFor(); await scan('phone settings ' + width);
     await page.getByRole('button', { name: 'Close settings', exact: true }).click();
     await page.getByRole('button', { name: 'Spending history', exact: true }).click();
-    await page.getByRole('heading', { name: 'Spending history', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Spending history' }).waitFor();
     await scan('phone history ' + width);
     await page.getByRole('button', { name: 'Dashboard', exact: true }).click();
   }
@@ -129,16 +129,16 @@ try {
   const downloadPromise = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export backup' }).click(); const download = await downloadPromise;
   const backup = JSON.parse(await readFile(await download.path(), 'utf8')); assert.equal(backup.transactions.length, 3); assert.ok(backup.transactions.some(t => t.note === 'Unsaved dummy snack'));
   await page.getByRole('button', { name: 'Close settings' }).click(); failSave = false; await page.getByRole('button', { name: 'Retry saving' }).click(); await saved();
-  const otherTab = await context.newPage(); await otherTab.goto(cfg.origin); await otherTab.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  const otherTab = await context.newPage(); await otherTab.goto(cfg.origin); await otherTab.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   await page.getByLabel('New budget note').fill('First tab note'); await page.getByRole('button', { name: 'Add note', exact: true }).click(); await saved();
   await otherTab.getByLabel('New budget note').fill('Stale tab note'); await otherTab.getByRole('button', { name: 'Add note', exact: true }).click(); await otherTab.getByRole('alert').filter({ hasText: 'changed in another tab' }).waitFor();
   await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor();
   await otherTab.getByRole('heading', { name: 'Welcome back.' }).waitFor(); assert.equal(await otherTab.locator('.balance-value').count(), 0); await otherTab.close();
-  await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await credentials('bob'); await page.getByLabel('Profile name').fill('Bob Example'); await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByRole('button', { name: 'Create a profile', exact: true }).click(); await credentials('bob'); await page.getByLabel('Profile name').fill('Bob Example'); await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹0'); assert.equal(await page.getByText('Dummy lunch', { exact: true }).count(), 0);
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click(); await confirm(); await page.getByRole('heading', { name: 'Welcome back.' }).waitFor(); await credentials('alice'); await page.getByRole('button', { name: 'Open my workspace' }).click(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
-  await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
+  await page.reload(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor(); assert.equal(await page.locator('.balance-value').textContent(), '₹5,350');
   assert.equal(await page.getByText('Money from Alex', { exact: true }).count(), 1);
   assert.equal(await page.getByText('First tab note', { exact: true }).count(), 1); assert.equal(await page.getByText('Stale tab note', { exact: true }).count(), 0);
   await page.getByRole('button', { name: 'Open profile settings' }).click(); await page.getByRole('button', { name: 'Clear financial records', exact: true }).click(); await confirm(); await saved(); assert.equal(await page.locator('.balance-value').textContent(), '₹0');
@@ -156,14 +156,14 @@ try {
   await nativePage.getByLabel('Username', { exact: true }).fill('android_user');
   await nativePage.getByLabel('Password', { exact: true }).fill('dummy-browser-password');
   await nativePage.getByRole('button', { name: 'Create my profile' }).click();
-  await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await nativePage.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   const back = () => nativePage.evaluate(() => window.nativeTest.events('backButton'));
   await nativePage.getByRole('button', { name: 'Add expense', exact: true }).click();
   await nativePage.getByRole('dialog').waitFor(); await back();
   await nativePage.getByRole('dialog').waitFor({ state: 'detached' });
   await nativePage.getByRole('button', { name: 'Monthly budget', exact: true }).click();
-  await nativePage.getByRole('heading', { name: 'Give your month a plan.' }).waitFor(); await back();
-  await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await nativePage.getByRole('heading', { level: 1, name: 'Monthly budget' }).waitFor(); await back();
+  await nativePage.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   await nativePage.getByRole('button', { name: 'Workspace options' }).click(); await back();
   assert.equal(await nativePage.getByRole('button', { name: 'Workspace options' }).getAttribute('aria-expanded'), 'false');
   await nativePage.getByRole('button', { name: 'Lend & borrow', exact: true }).click();
@@ -228,7 +228,7 @@ try {
   await nativePage.getByRole('button', { name: 'Both', exact: true }).click();
   await scan('active and settled debts in light mode', nativePage);
   await nativePage.setViewportSize({ width: 380, height: 850 });
-  await back(); await nativePage.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await back(); await nativePage.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   await nativeContext.route('**/api/index?action=save', route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Native save unavailable.' }) }));
   await nativePage.getByRole('button', { name: 'Add expense', exact: true }).click();
   await nativePage.getByLabel('Amount').fill('25'); await nativePage.getByLabel('Category', { exact: true }).fill('Food');

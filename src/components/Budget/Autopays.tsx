@@ -12,7 +12,7 @@ export function Autopays({ items, currencySymbol, today, onChange }: Props) {
   const sorted = [...items].sort((a, b) => Number(!a.active) - Number(!b.active) || a.day - b.day);
   const monthly = items.filter(a => a.active).reduce((sum, a) => sum + a.amount, 0);
   return <section className="panel autopay-panel">
-    <div className="section-heading"><div><h2><Repeat size={18}/>Autopays</h2><p>Monthly subscriptions and SIPs, recorded for you on their day.</p></div><button className="icon-button" aria-label={adding ? 'Close autopay form' : 'Add autopay'} onClick={() => setAdding(!adding)}>{adding ? <X size={18}/> : <Plus size={18}/>}</button></div>
+    <div className="section-heading"><div><h2><Repeat size={18}/>Autopays</h2><p>Recorded every month on their day</p></div><button className="icon-button" aria-label={adding ? 'Close autopay form' : 'Add autopay'} onClick={() => setAdding(!adding)}>{adding ? <X size={18}/> : <Plus size={18}/>}</button></div>
     {adding && <form className="widget-form" onSubmit={e => {
       e.preventDefault(); const form = new FormData(e.currentTarget);
       const title = String(form.get('title')).trim(), amount = Number(form.get('amount')), day = Number(form.get('day')), note = String(form.get('note') || '').trim();

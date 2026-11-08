@@ -73,9 +73,9 @@ try {
   await page.getByRole('button', { name: 'Create a profile', exact: true }).click();
   await page.getByLabel('Invite code').fill(cfg.invite); await page.getByLabel('Username', { exact: true }).fill('aarav');
   await page.getByLabel('Password', { exact: true }).fill('demo-password-123'); await page.getByLabel('Profile name').fill('Aarav Demo');
-  await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.getByRole('button', { name: 'Create my profile' }).click(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
   const [profile] = store.profiles.values(); profile.data = structuredClone(demo); profile.revision++;
-  await page.reload(); await page.getByRole('heading', { name: 'Your money, at a glance.' }).waitFor();
+  await page.reload(); await page.getByRole('heading', { name: /^[A-Z][a-z]+ [0-9]{4}$/ }).waitFor();
 
   await shot('dashboard-light');
   await go('Spending history'); await shot('history');
