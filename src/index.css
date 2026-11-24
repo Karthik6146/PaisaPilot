@@ -716,6 +716,10 @@ input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-o
 [data-theme="dark"] .primary-button:hover:not(:disabled) { background: #d9e1d3; border-color: #d9e1d3; box-shadow: none; }
 @media (max-width: 640px) { .page-heading h1 { font-size: 30px; } .balance-value { font-size: 44px; } .daily-value { font-size: 38px; } }
 
+.legal-links a { color: inherit; text-underline-offset: 3px; }
+.legal-links a:hover { color: #2b5a42; }
+[data-theme="dark"] .legal-links a:hover { color: var(--dark-accent); }
+
 /* Themed select, date picker and confirm dialog (replace native popups). */
 .popover { position: fixed; z-index: 60; }
 .select, .date-picker, .form-grid > .field { min-width: 0; }

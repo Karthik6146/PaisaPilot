@@ -248,6 +248,7 @@ This needs **Java 21** and **Android SDK 36**, and produces `artifacts/PaisaPilo
 - 👤 **Profile isolation** — the profile always comes from the session, never from the request.
 - 🧹 **Strict Content-Security-Policy**, no Google Fonts and no analytics.
 - 💾 **Backups** — export and restore your own JSON. Unknown fields and legacy keys are stripped.
+- 📄 **Policies** — [Privacy policy](public/privacy.html) and [Terms of use](public/terms.html), served at `/privacy.html` and `/terms.html` and linked from sign-in and settings.
 
 ---
 

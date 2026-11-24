@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy · PaisaPilot</title>
+<meta name="description" content="What PaisaPilot stores, why, and how to delete it.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+<main>
+  <nav><a class="brand" href="/">PaisaPilot</a><a href="/terms.html">Terms of use</a></nav>
+  <h1>Privacy policy</h1>
+  <p class="meta">Effective 24 November 2026</p>
+  <article>
+    <h2>Who runs PaisaPilot</h2>
+    <p>PaisaPilot is a private, invite-only budget tracker. It is run by the site owner who gave you your invite code. Questions about your data go to them.</p>
+
+    <h2>What we store</h2>
+    <ul>
+      <li><strong>Your profile:</strong> the username and profile name you choose, and your password as a salted scrypt hash. The password itself is never stored.</li>
+      <li><strong>Your records:</strong> everything you enter, such as transactions, budgets, sub-budgets, autopays, priorities, notes and loans. Loans can include another person's name and phone number if you add them.</li>
+      <li><strong>Your sessions:</strong> a hash of each sign-in token, a request-verification token and an expiry time. Sessions last 7 days or until you sign out.</li>
+      <li><strong>Sign-in limits:</strong> short-lived counters keyed by a keyed hash of your IP address and username, used to slow down password guessing. They expire after 15 minutes.</li>
+    </ul>
+
+    <h2>What we do not do</h2>
+    <ul>
+      <li>No ads, no analytics and no third-party trackers.</li>
+      <li>No selling or sharing of your data with anyone.</li>
+      <li>No connection to your bank. Every number comes from what you type.</li>
+      <li>Fonts and scripts are served from PaisaPilot itself, so loading a page does not contact other companies.</li>
+    </ul>
+
+    <h2>Cookies and device storage</h2>
+    <p>PaisaPilot sets one cookie, the session cookie that keeps you signed in. It is HttpOnly and SameSite=Strict, so scripts and other sites cannot read it. Your records are not kept in browser storage.</p>
+
+    <h2>Where your data lives</h2>
+    <p>The app runs on Vercel and stores data in a Supabase Postgres database. Both are infrastructure providers that host the data on our behalf. Your hosting provider may keep standard request logs, such as IP addresses, for a limited time.</p>
+
+    <h2>When your data leaves the app</h2>
+    <p>Only when you choose to. Sending a loan reminder opens WhatsApp with the message filled in, and exporting a backup hands the file to your device or share sheet. What happens after that is governed by those apps.</p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li><strong>Export:</strong> Settings &amp; backup lets you download all your records as a JSON file at any time.</li>
+      <li><strong>Correct or clear:</strong> edit any record, or clear all financial records while keeping your profile.</li>
+      <li><strong>Delete:</strong> Delete profile removes your profile, records and sessions from the database straight away. Copies inside the hosting provider's own backups expire on its backup schedule.</li>
+    </ul>
+
+    <h2>Security</h2>
+    <p>Data travels over HTTPS. Passwords are hashed with scrypt, sessions are stored only as hashes, and every change needs a verification token. No system is perfectly secure, so use a password you do not use anywhere else. Password recovery is not available, so keep yours safe.</p>
+
+    <h2>Children</h2>
+    <p>PaisaPilot is built for pocket money. If you are under 18, use it with a parent or guardian's permission.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes, the effective date above changes too. Significant changes will be shared with the people who hold an invite.</p>
+  </article>
+  <footer><a href="/">Back to PaisaPilot</a></footer>
+</main>
+</body>
+</html>

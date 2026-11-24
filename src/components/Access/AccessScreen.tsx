@@ -20,6 +20,6 @@ export function AccessScreen({ onAccess, notice }: { onAccess: () => Promise<voi
           {error && <p className="inline-warning" role="alert">{error}</p>}
           <button type="submit" className="primary-button full-width">{busy ? 'Please wait…' : create ? 'Create my profile' : 'Open my workspace'}<ArrowRight size={17}/></button>
         </fieldset>
-      </form><p className="access-switch">{create ? 'Already have a profile?' : 'First time here?'} <button disabled={busy} onClick={() => { setCreate(!create); setError(''); }}>{create ? 'Sign in' : 'Create a profile'}</button></p><p className="form-hint">The invite gets you in. Your password keeps your profile private.</p>
+      </form><p className="access-switch">{create ? 'Already have a profile?' : 'First time here?'} <button disabled={busy} onClick={() => { setCreate(!create); setError(''); }}>{create ? 'Sign in' : 'Create a profile'}</button></p><p className="form-hint">The invite gets you in. Your password keeps your profile private.</p><p className="form-hint legal-links">{create ? 'By creating a profile you agree to the ' : ''}<a href="/terms.html">Terms of use</a> · <a href="/privacy.html">Privacy policy</a></p>
     </div></section></main>;
 }
