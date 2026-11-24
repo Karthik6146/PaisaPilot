@@ -464,7 +464,7 @@ export function App({ initialData, onChange, saveStatus, saveError, onRetry, onL
         </div>
       </main>
 
-      <footer className="workspace-footer"><span/><span>Saved to your private profile · Internet required</span></footer>
+      <footer className="workspace-footer"><span className="legal-links"><a href="/terms.html">Terms of use</a> · <a href="/privacy.html">Privacy policy</a></span><span>Saved to your private profile · Internet required</span></footer>
       </div>
 
       {/* Modals */}
